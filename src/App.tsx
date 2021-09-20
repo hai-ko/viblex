@@ -3,10 +3,13 @@ import './App.css';
 import type { PluginApi } from '@remixproject/plugin-utils';
 import { PluginClient } from '@remixproject/plugin';
 import { createClient } from '@remixproject/plugin-webview';
-import { getAllFiles } from './remix-utils/FileHandler';
-import { parseContract } from './lib/ParseContract';
 import { IRemixApi } from '@remixproject/plugin-api';
 import Graph from './graph/Graph';
+// import 'bootstrap/dist/css/bootstrap.min.css';
+// import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import { DAG, getNodePosition } from './graph/NodePosition';
+import { ParsedSolFile } from './lib/ParseSolidity';
+import { useRef } from 'react';
 
 function App() {
     const [client, setClient] = useState<
@@ -14,7 +17,7 @@ function App() {
               PluginApi<Readonly<IRemixApi>>)
         | undefined
     >();
-    const [files, setFiles] = useState<string[]>([]);
+    const [dag, setDAG] = useState<DAG<ParsedSolFile>>();
 
     useEffect(() => {
         if (!client) {
@@ -24,42 +27,20 @@ function App() {
                 }),
             );
             client.onload(async () => {
-                const files = await getAllFiles(client);
-                setFiles(parseContract(files));
+                //@ts-ignore
+                const solidityParser = SolidityParser.parse;
+
+                setDAG(await getNodePosition(client, solidityParser));
             });
             setClient(client);
         }
     }, [client]);
 
-    let table: any = files
-        .map((file, index) => [file, 'contract', '0', 1, index])
-        .flat();
-    table =
-        table.length === 0
-            ? [
-                  'Storage',
-                  'contract',
-                  '0',
-                  1,
-                  0,
-                  'Owner',
-                  'contract',
-                  '0',
-                  1,
-                  1,
-                  'Ballot',
-                  'contract',
-                  '0',
-                  1,
-                  2,
-              ]
-            : table;
+    const graphContainer = useRef<HTMLDivElement>(null);
 
     return (
-        <div className="App">
-            {table.length > 0 && (
-                <Graph width={1000} height={1000} table={table} />
-            )}
+        <div className="App h-100 w-100" ref={graphContainer}>
+            {graphContainer.current && dag && <Graph dag={dag} />}
         </div>
     );
 }
