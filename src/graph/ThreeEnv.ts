@@ -11,7 +11,7 @@ import { DAG, ThreeGraphNode } from './NodePosition';
 import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
 import { showImportPaths } from './EdgeSegments';
 import { DefaultGraphStyle } from './GraphStyle';
-import { createNodes } from './Nodes';
+import { createNodes } from './Node';
 
 export interface Three {
     camera: PerspectiveCamera;
@@ -139,6 +139,7 @@ export function init(
 
     (threeContainer.current as any).appendChild(three.renderer.domElement);
     three.controls.addEventListener('change', () => render(three));
+    three.controls.handleResize();
 
     const objects: CSS3DObject[] = [];
 
@@ -172,10 +173,6 @@ export function init(
         () => onWindowResize(three, threeContainer, setThree),
         false,
     );
-
-    if (threeContainer.current) {
-        threeContainer.current.onresize = (e) => console.log(e);
-    }
 
     setThree(three);
 }
