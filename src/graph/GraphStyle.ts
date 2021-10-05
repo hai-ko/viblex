@@ -11,8 +11,8 @@ export interface GraphStyle {
 }
 
 export const DefaultGraphStyle: GraphStyle = {
-    ELEMENT_WIDTH: 600,
-    ELEMENT_HEIGHT: 250,
+    ELEMENT_WIDTH: 720,
+    ELEMENT_HEIGHT: 350,
     ELEMENT_BORDER_COLOR: 'rgba(127, 255, 255, 0.25)',
     COL_DISTANCE: 125,
     SEGMENT_THICKNESS: 10,
