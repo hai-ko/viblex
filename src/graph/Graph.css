@@ -3,6 +3,7 @@
 
     text-align: left;
     line-height: normal;
+    border-radius: 10px;
 
 
 }
@@ -44,6 +45,18 @@
     margin-left: 10px;
 }
 
+
+.menu-btn:hover{
+    color: rgba(255, 174, 52, 1);
+    background: rgba(255, 174, 52, 0.3);
+  
+}
+
+.menu-btn:focus,
+.menu-btn.focus {
+    box-shadow: 0 0 0 .2rem rgba(255, 174, 52, 1)
+}
+
 .menu {
     position: absolute;
     z-index: 999;
@@ -55,7 +68,7 @@
 .node .file-title {
     margin-top: 2rem;
     margin-bottom: 1.5rem;
-    font-size: 45px;
+    font-size: 65px;
     font-weight: bold;
     color: rgba(255, 255, 255, 0.75);
     /* text-shadow: 0 0 10px rgba(0,255,255,0.95); */
@@ -63,8 +76,8 @@
 }
 
 .node .file-info {
-    margin-top: 0.5rem;
-    font-size: 20px;
+    margin-top: 1rem;
+    font-size: 30px;
     word-break: break-all;
     color: rgba(255, 255, 255, 0.75);
     /* text-shadow: 0 0 10px rgba(0,255,255,0.95); */
