@@ -3,6 +3,7 @@ import {
     ASTNode,
     ContractDefinition,
     ImportDirective,
+    PragmaDirective,
     SourceUnit,
 } from '@solidity-parser/parser/dist/src/ast-types';
 import { Token } from 'antlr4ts';
@@ -33,6 +34,7 @@ export enum SolDefinitionType {
     FileLevelConstant = 'FileLevelConstant',
     EnumDefinition = 'EnumDefinition',
     ImportDirective = 'ImportDirective',
+    PragmaDirective = 'PragmaDirective',
 }
 
 export function parseFiles(
@@ -77,6 +79,12 @@ export function getImports(astNodes: ASTNode[]): ImportDirective[] {
     return astNodes.filter(
         (astNodes) => astNodes.type === SolDefinitionType.ImportDirective,
     ) as ImportDirective[];
+}
+
+export function getPragmas(astNodes: ASTNode[]): PragmaDirective[] {
+    return astNodes.filter(
+        (astNodes) => astNodes.type === SolDefinitionType.PragmaDirective,
+    ) as PragmaDirective[];
 }
 
 // TODO: test

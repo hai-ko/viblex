@@ -27,7 +27,7 @@ function Graph(props: GraphProps) {
     }, [three]);
 
     return (
-        <div ref={threeContainer} className="w-100 h-100">
+        <div ref={threeContainer} className="w-100 h-100 three-container">
             <Menu />
         </div>
     );
