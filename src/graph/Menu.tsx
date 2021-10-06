@@ -24,9 +24,6 @@ function Menu(props: MenuProps) {
             >
                 <Icon iconClass="fas fa-search-minus" />
             </button>
-            <button type="button" className="btn btn-sm btn-primary menu-btn">
-                Primary
-            </button>
         </div>
     );
 }

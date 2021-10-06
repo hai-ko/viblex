@@ -8,16 +8,18 @@ export interface GraphStyle {
     SEGMENT_NOT_HIGHLIGHTED_COLOR: string;
     SEGMENT_COLOR: string;
     ANIMATION_DURATION: number;
+    EXPAND_HEIGHT: number;
 }
 
 export const DefaultGraphStyle: GraphStyle = {
-    ELEMENT_WIDTH: 720,
-    ELEMENT_HEIGHT: 350,
+    ELEMENT_WIDTH: 800,
+    ELEMENT_HEIGHT: 200,
     ELEMENT_BORDER_COLOR: 'rgba(127, 255, 255, 0.25)',
-    COL_DISTANCE: 125,
+    COL_DISTANCE: 150,
     SEGMENT_THICKNESS: 10,
     SEGMENT_HIGHLIGHTED_COLOR: '#ffae00',
     SEGMENT_NOT_HIGHLIGHTED_COLOR: '#6d6d6d',
     SEGMENT_COLOR: '#ffffff',
     ANIMATION_DURATION: 1000,
+    EXPAND_HEIGHT: 400,
 };
