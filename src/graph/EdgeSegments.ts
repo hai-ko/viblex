@@ -82,60 +82,83 @@ export function showImportPaths<T>(
     }
 }
 
-export function getSegments(x: number, y: number, graphStyle: GraphStyle) {
-    const getSegment = (
-        x: number,
-        y: number,
-        width: number,
-        height: number,
-    ): CSS3DObject => {
-        const segment = document.createElement('div');
-        segment.className = 'edge';
-        segment.style.width = width + 'px';
-        segment.style.height = height + 'px';
-
-        const segmentObject = new CSS3DObject(segment);
-        segmentObject.position.x = x;
-        segmentObject.position.y = y;
-
-        return segmentObject;
-    };
-
-    return [
-        getSegment(
+export const getSegmentValues = [
+    (x: number, y: number, graphStyle: GraphStyle): number[] => {
+        return [
             x - graphStyle.ELEMENT_WIDTH / 2 - graphStyle.COL_DISTANCE / 4,
             y,
             graphStyle.COL_DISTANCE / 2,
             graphStyle.SEGMENT_THICKNESS,
-        ),
-        getSegment(
+        ];
+    },
+
+    (x: number, y: number, graphStyle: GraphStyle): number[] => {
+        return [
             x + graphStyle.ELEMENT_WIDTH / 2 + graphStyle.COL_DISTANCE / 4,
             y,
             graphStyle.COL_DISTANCE / 2,
             graphStyle.SEGMENT_THICKNESS,
-        ),
-        getSegment(
+        ];
+    },
+
+    (x: number, y: number, graphStyle: GraphStyle): number[] => {
+        return [
             x + graphStyle.ELEMENT_WIDTH / 2 + graphStyle.COL_DISTANCE / 2,
             y +
                 (graphStyle.ELEMENT_HEIGHT / 2 + graphStyle.COL_DISTANCE / 2) /
                     2,
             graphStyle.SEGMENT_THICKNESS,
             graphStyle.ELEMENT_HEIGHT / 2 + graphStyle.COL_DISTANCE / 2,
-        ),
-        getSegment(
+        ];
+    },
+    (x: number, y: number, graphStyle: GraphStyle): number[] => {
+        return [
             x + graphStyle.ELEMENT_WIDTH / 2 + graphStyle.COL_DISTANCE / 2,
             y -
                 (graphStyle.ELEMENT_HEIGHT / 2 + graphStyle.COL_DISTANCE / 2) /
                     2,
             graphStyle.SEGMENT_THICKNESS,
             graphStyle.ELEMENT_HEIGHT / 2 + graphStyle.COL_DISTANCE / 2,
-        ),
-
-        getSegment(
+        ];
+    },
+    (x: number, y: number, graphStyle: GraphStyle): number[] => {
+        return [
             x + graphStyle.ELEMENT_WIDTH + graphStyle.COL_DISTANCE,
             y - (graphStyle.ELEMENT_HEIGHT / 2 + graphStyle.COL_DISTANCE / 2),
             graphStyle.ELEMENT_WIDTH + graphStyle.COL_DISTANCE,
             graphStyle.SEGMENT_THICKNESS,
-        ),
+        ];
+    },
+];
+
+export function getSegments(x: number, y: number, graphStyle: GraphStyle) {
+    const getSegment = (values: number[]): CSS3DObject => {
+        const segment = document.createElement('div');
+        segment.className = 'edge';
+        segment.style.width = values[2] + 'px';
+        segment.style.height = values[3] + 'px';
+
+        const segmentObject = new CSS3DObject(segment);
+        segmentObject.position.x = values[0];
+        segmentObject.position.y = values[1];
+
+        return segmentObject;
+    };
+
+    const segments = [
+        getSegment(getSegmentValues[0](x, y, graphStyle)),
+        getSegment(getSegmentValues[1](x, y, graphStyle)),
+        getSegment(getSegmentValues[2](x, y, graphStyle)),
+        getSegment(getSegmentValues[3](x, y, graphStyle)),
+        getSegment(getSegmentValues[4](x, y, graphStyle)),
     ];
+
+    return {
+        segments,
+        initialValues: segments.map((seg) => ({
+            x: seg.position.x,
+            y: seg.position.y,
+            height: seg.element.style.height,
+        })),
+    };
 }

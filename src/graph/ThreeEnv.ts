@@ -10,14 +10,21 @@ import { DAG, ThreeGraphNode } from './NodePosition';
 // @ts-ignore
 import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
 import { showImportPaths } from './EdgeSegments';
-import { DefaultGraphStyle } from './GraphStyle';
-import { createNodes } from './Node';
+import { DefaultGraphStyle, GraphStyle } from './GraphStyle';
+import { createNodes, PortalParts } from './Node';
+import React from 'react';
 
 export interface Three {
     camera: PerspectiveCamera;
     renderer: CSS3DRenderer;
     scene: THREE.Scene;
     controls: TrackballControls;
+}
+
+export interface RenderedNodes {
+    threeNodes: ThreeGraphNode<ParsedSolFile>[];
+    portals: PortalParts[];
+    graphStyle: GraphStyle;
 }
 
 function createThree(width: number, height: number): Three {
@@ -130,7 +137,7 @@ export function init(
     setThree: React.Dispatch<React.SetStateAction<Three | undefined>>,
     dag: DAG<ParsedSolFile>,
     threeContainer: React.RefObject<HTMLDivElement>,
-) {
+): RenderedNodes {
     const graphStyle = DefaultGraphStyle;
     const height = (threeContainer.current as any).clientHeight;
     const width = (threeContainer.current as any).clientWidth;
@@ -143,7 +150,7 @@ export function init(
 
     const objects: CSS3DObject[] = [];
 
-    const threeNodes = createNodes(
+    const nodes = createNodes(
         DefaultGraphStyle,
         dag,
         height,
@@ -151,18 +158,18 @@ export function init(
         three.camera,
     );
 
-    for (const node of threeNodes) {
+    for (const node of nodes.threeNodes) {
         if (node.objectCSS) {
             three.scene.add(node.objectCSS);
             objects.push(node.objectCSS);
         }
     }
 
-    transform(threeNodes, graphStyle.ANIMATION_DURATION);
+    transform(nodes.threeNodes, graphStyle.ANIMATION_DURATION);
 
     setTimeout(
         () =>
-            showImportPaths(dag.edges, threeNodes, (o: CSS3DObject) => {
+            showImportPaths(dag.edges, nodes.threeNodes, (o: CSS3DObject) => {
                 three.scene.add(o);
             }),
         graphStyle.ANIMATION_DURATION * 2,
@@ -171,8 +178,11 @@ export function init(
     window.addEventListener(
         'resize',
         () => onWindowResize(three, threeContainer, setThree),
+
         false,
     );
 
     setThree(three);
+
+    return nodes;
 }

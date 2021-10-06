@@ -12,6 +12,7 @@ import {
     getOutgoingEdges,
 } from '../lib/Graph';
 import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer';
+import { Vector3 } from 'three';
 
 export interface DAG<T> {
     nodes: GraphNode<T>[];
@@ -27,8 +28,10 @@ export interface GraphNode<T> {
 
 export interface ThreeGraphNode<T> extends GraphNode<T> {
     segments: CSS3DObject[];
+    segmentsInitialValues: { x: number; y: number; height: string }[];
     object?: THREE.Object3D<THREE.Event>;
     objectCSS?: CSS3DObject;
+    initialPosition?: { x: number; y: number };
 }
 
 export async function getNodePositionOld(
