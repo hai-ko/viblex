@@ -3,36 +3,23 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import { getPragmas, ParsedSolFile } from '../lib/ParseSolidity';
 import { getFileDisplayName } from '../lib/FileHandling';
 import { GraphStyle } from './GraphStyle';
-import { useState } from 'react';
 import Icon from './Icon';
 import { GraphNode } from './NodePosition';
+import { GraphViewState } from './Graph';
 
 interface FileNodeProps {
     node: GraphNode<ParsedSolFile>;
     graphStyle: GraphStyle;
-    onMouseLeave: () => void;
-    onMouseOver: () => void;
-    selectedNodeId: string | undefined;
-    setSelectedNode: (nodeId: string) => void;
+    onMouseLeave?: () => void;
+    onMouseOver?: () => void;
+    selectedNodeId?: string;
+    graphViewState: GraphViewState;
+    nodeToMax?: string;
+    setSelectedNode?: (nodeId: string | undefined) => void;
+    setNodeToMax?: (nodeId: string | undefined) => void;
 }
 
-function isSelected(
-    onMouseOver: () => void,
-    setSelected: React.Dispatch<React.SetStateAction<boolean>>,
-) {
-    onMouseOver();
-    setSelected(true);
-}
-
-function unSelected(
-    onMouseLeave: () => void,
-    setSelected: React.Dispatch<React.SetStateAction<boolean>>,
-) {
-    onMouseLeave();
-    setSelected(false);
-}
-
-function getIcon(element: ParsedSolFile | undefined): JSX.Element {
+export function getIcon(element: ParsedSolFile | undefined): JSX.Element {
     if (element) {
         switch (element.type) {
             case 'http':
@@ -53,8 +40,6 @@ function getIcon(element: ParsedSolFile | undefined): JSX.Element {
 }
 
 function FileNode(props: FileNodeProps) {
-    const [selected, setSelected] = useState<boolean>(false);
-
     const icon = getIcon(props.node.element);
 
     let version: string | undefined;
@@ -66,7 +51,9 @@ function FileNode(props: FileNodeProps) {
         version = solVersionPragma && solVersionPragma.value;
     }
 
-    const isNodeSelected = props.selectedNodeId === props.node.id;
+    const isNodeSelected =
+        props.selectedNodeId === props.node.id ||
+        props.nodeToMax === props.node.id;
 
     const nodeDivStyle: React.CSSProperties = {
         width: props.graphStyle.ELEMENT_WIDTH.toString() + 'px',
@@ -77,7 +64,7 @@ function FileNode(props: FileNodeProps) {
                 : props.graphStyle.ELEMENT_HEIGHT
             ).toString() + 'px',
         borderWidth: props.graphStyle.SEGMENT_THICKNESS + 'px',
-        borderColor: selected
+        borderColor: isNodeSelected
             ? props.graphStyle.SEGMENT_HIGHLIGHTED_COLOR
             : props.graphStyle.ELEMENT_BORDER_COLOR,
         borderStyle: 'solid',
@@ -89,9 +76,36 @@ function FileNode(props: FileNodeProps) {
                 props.node.element?.type ? 'external-node' : 'local-node'
             } file`}
             style={nodeDivStyle}
-            onMouseDown={() => props.setSelectedNode(props.node.id)}
-            onMouseLeave={() => unSelected(props.onMouseLeave, setSelected)}
-            onMouseOver={() => isSelected(props.onMouseOver, setSelected)}
+            onMouseDown={() => {
+                if (
+                    props.graphViewState === GraphViewState.Ready &&
+                    props.setNodeToMax &&
+                    props.onMouseLeave
+                ) {
+                    props.setNodeToMax(props.node.id);
+                    props.onMouseLeave();
+                }
+            }}
+            onMouseLeave={() => {
+                if (
+                    props.graphViewState === GraphViewState.Ready &&
+                    props.setSelectedNode &&
+                    props.onMouseLeave
+                ) {
+                    props.setSelectedNode(undefined);
+                    props.onMouseLeave();
+                }
+            }}
+            onMouseOver={() => {
+                if (
+                    props.graphViewState === GraphViewState.Ready &&
+                    props.setSelectedNode &&
+                    props.onMouseOver
+                ) {
+                    props.setSelectedNode(props.node.id);
+                    props.onMouseOver();
+                }
+            }}
         >
             <div className="row">
                 <div className="col file-title text-center">

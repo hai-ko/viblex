@@ -13,6 +13,7 @@ import { showImportPaths } from './EdgeSegments';
 import { DefaultGraphStyle, GraphStyle } from './GraphStyle';
 import { createNodes, PortalParts } from './Node';
 import React from 'react';
+import { GraphViewState } from './Graph';
 
 export interface Three {
     camera: PerspectiveCamera;
@@ -40,7 +41,7 @@ function createThree(width: number, height: number): Three {
     renderer.setSize(width, height);
 
     const controls = new TrackballControls(camera, renderer.domElement);
-    controls.minDistance = 500;
+    controls.minDistance = 10;
     controls.maxDistance = 12000;
 
     controls.mouseButtons.LEFT = THREE.MOUSE.PAN;
@@ -55,7 +56,7 @@ function createThree(width: number, height: number): Three {
     };
 }
 
-function onWindowResize(
+export function onWindowResize(
     three: Three,
     threeContainer: React.RefObject<HTMLDivElement>,
     setThree: React.Dispatch<React.SetStateAction<Three | undefined>>,
@@ -137,6 +138,7 @@ export function init(
     setThree: React.Dispatch<React.SetStateAction<Three | undefined>>,
     dag: DAG<ParsedSolFile>,
     threeContainer: React.RefObject<HTMLDivElement>,
+    setGraphViewState: (state: GraphViewState) => void,
 ): RenderedNodes {
     const graphStyle = DefaultGraphStyle;
     const height = (threeContainer.current as any).clientHeight;
@@ -183,6 +185,7 @@ export function init(
     );
 
     setThree(three);
+    setGraphViewState(GraphViewState.Ready);
 
     return nodes;
 }

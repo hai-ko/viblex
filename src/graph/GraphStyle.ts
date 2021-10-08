@@ -21,5 +21,5 @@ export const DefaultGraphStyle: GraphStyle = {
     SEGMENT_NOT_HIGHLIGHTED_COLOR: '#6d6d6d',
     SEGMENT_COLOR: '#ffffff',
     ANIMATION_DURATION: 1000,
-    EXPAND_HEIGHT: 400,
+    EXPAND_HEIGHT: 200,
 };
