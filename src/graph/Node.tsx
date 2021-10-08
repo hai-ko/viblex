@@ -14,74 +14,6 @@ export interface PortalParts {
     nodeDiv: HTMLDivElement;
 }
 
-export function restoreOriginal(renderedNodes: RenderedNodes | undefined) {
-    if (renderedNodes) {
-        renderedNodes.threeNodes.forEach((node) => {
-            if (node.objectCSS && node.initialPosition) {
-                node.objectCSS.position.x = node.initialPosition.x;
-                node.objectCSS.position.y = node.initialPosition.y;
-            }
-
-            node.segments.forEach((segment, index) => {
-                segment.position.x = node.segmentsInitialValues[index].x;
-                segment.position.y = node.segmentsInitialValues[index].y;
-                segment.element.style.height =
-                    node.segmentsInitialValues[index].height;
-            });
-        });
-    }
-}
-
-export function expendNode(
-    selectedNodeId: string | undefined,
-    renderedNodes: RenderedNodes | undefined,
-) {
-    restoreOriginal(renderedNodes);
-    if (selectedNodeId && renderedNodes) {
-        const style = renderedNodes.graphStyle;
-        const selectedNode = renderedNodes.threeNodes.find(
-            (node) => node.id === selectedNodeId,
-        );
-        if (selectedNode) {
-            if (selectedNode.objectCSS && selectedNode.initialPosition) {
-                selectedNode.objectCSS.position.y =
-                    selectedNode.initialPosition.y - style.EXPAND_HEIGHT / 2;
-            }
-            renderedNodes.threeNodes
-                .filter((node) => node.yPos >= selectedNode.yPos)
-                .forEach((node) => {
-                    if (node.yPos > selectedNode.yPos) {
-                        if (node.initialPosition && node.objectCSS) {
-                            node.objectCSS.position.y =
-                                node.initialPosition.y - style.EXPAND_HEIGHT;
-                        }
-
-                        node.segments.forEach((segment, index) => {
-                            segment.position.y =
-                                node.segmentsInitialValues[index].y -
-                                style.EXPAND_HEIGHT;
-                        });
-                    }
-
-                    if (node.yPos === selectedNode.yPos) {
-                        node.segments[3].position.y =
-                            node.segmentsInitialValues[3].y -
-                            style.EXPAND_HEIGHT / 2;
-
-                        node.segments[3].element.style.height =
-                            style.ELEMENT_HEIGHT / 2 +
-                            style.COL_DISTANCE / 2 +
-                            style.EXPAND_HEIGHT +
-                            'px';
-                        node.segments[4].position.y =
-                            node.segmentsInitialValues[4].y -
-                            style.EXPAND_HEIGHT;
-                    }
-                });
-        }
-    }
-}
-
 export function nodePosToThreePos(
     x: number,
     y: number,
@@ -89,7 +21,6 @@ export function nodePosToThreePos(
     width: number,
     camera: THREE.PerspectiveCamera,
 ): THREE.Vector3 {
-    console.log('a');
     const vec = new THREE.Vector3();
     const threePos = new THREE.Vector3();
 
