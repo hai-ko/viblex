@@ -92,3 +92,24 @@
     /* text-shadow: 0 0 10px rgba(0,255,255,0.95); */
 
 }
+
+.file-view-container {
+    max-width: 720px;
+}
+
+.file-view-container .file-title {
+
+
+    font-size: 2rem;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.75);
+    /* text-shadow: 0 0 10px rgba(0,255,255,0.95); */
+
+}
+
+.view-headline {
+    margin-top: 2rem;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 1.2rem;
+    font-weight: bold;
+}

@@ -7,6 +7,7 @@ import { useState } from 'react';
 import Icon from './Icon';
 import { GraphNode } from './NodePosition';
 import { getIcon } from './FileNode';
+import ViewEntry from './ViewEntry';
 
 interface FileViewProps {
     node: GraphNode<ParsedSolFile>;
@@ -32,7 +33,7 @@ function FileView(props: FileViewProps) {
                 props.node.element?.type ? 'external-node' : 'local-node'
             } file`}
         >
-            <div className="row ">
+            <div className="row">
                 <div className="col text-right">
                     <button
                         type="button"
@@ -43,25 +44,36 @@ function FileView(props: FileViewProps) {
                     </button>
                 </div>
             </div>
-            <div className="row">
-                <div className="col file-title text-center">
-                    {getFileDisplayName(props.node.element.path)}
-                </div>
-            </div>
-            {version && (
-                <div className="row file-info">
-                    <div className="col-1 text-center d-flex align-content-center flex-wrap">
-                        <Icon iconClass="fas fa-tags" />
+            <div className="container file-view-container">
+                <div className="row ">
+                    <div className="col file-title text-center">
+                        {getFileDisplayName(props.node.element.path)}
                     </div>
-                    <div className="col-10">{version}</div>
                 </div>
-            )}
+                <div className="row ">
+                    <div className="col-12 text-center ">
+                        <span className="badge  bg-dark">&nbsp;File&nbsp;</span>
+                    </div>
+                </div>
+                <div className="row ">
+                    <div className="col view-headline text-left">
+                        <Icon iconClass="fas fa-info-circle" /> General
+                        Information
+                    </div>
+                </div>
+                {version && (
+                    <ViewEntry
+                        title="Solidity Version"
+                        content={version}
+                        top={true}
+                    />
+                )}
 
-            <div className="row file-info">
-                <div className="col-1 text-center d-flex align-content-center flex-wrap">
-                    {icon}
-                </div>
-                <div className="col-10">{props.node.element.path}</div>
+                <ViewEntry
+                    title="URL"
+                    content={props.node.element.path}
+                    top={version ? false : true}
+                />
             </div>
         </div>
     ) : null;
