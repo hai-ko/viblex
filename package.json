@@ -30,7 +30,7 @@
         "format": "prettier --write '*/**/*.{js,ts,tsx,json}'",
         "format:check": "prettier --check '*/**/*.{js,ts,tsx,json}'",
         "start": "react-scripts start",
-        "build": "react-scripts build",
+        "build": "./build.sh  && react-scripts build",
         "test": "react-scripts test",
         "eject": "react-scripts eject",
         "test:unit": "jest ./src --verbose"
