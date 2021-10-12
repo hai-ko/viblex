@@ -1,0 +1,38 @@
+.entry {
+    border-width: 1px;
+    border-top-width: 0px;
+    border-style: solid;
+    border-color: rgb(179, 179, 179);
+    color:rgba(32, 32, 32, 1);
+    background-color: rgb(224, 224, 224);
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    margin-top: 1rem;
+    font-size: 0.8rem;
+    margin-top: 0px !important;
+
+    word-break: break-all;
+    /* text-shadow: 0 0 10px rgba(0,255,255,0.95); */
+
+}
+
+.entry-top {
+    margin-top: 1rem !important;
+    border-top-width: 1px !important;
+}
+
+.entry-title{
+
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.entry-content {
+
+    font-family: monospace;
+}
+
+
+.entry:hover {
+    background-color: rgb(255, 255, 255);
+}
