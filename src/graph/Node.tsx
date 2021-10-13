@@ -6,9 +6,9 @@ import { GraphStyle } from './GraphStyle';
 import { DAG, GraphNode, ThreeGraphNode } from './NodePosition';
 import { RenderedNodes } from './ThreeEnv';
 
-export interface PortalParts {
+export interface PortalParts<T> {
     graphStyle: GraphStyle;
-    node: GraphNode<ParsedSolFile>;
+    node: GraphNode<T>;
     onMouseLeave: () => void;
     onMouseOver: () => void;
     nodeDiv: HTMLDivElement;
@@ -37,15 +37,15 @@ export function nodePosToThreePos(
     return threePos;
 }
 
-export function createNodes(
+export function createNodes<T>(
     graphStyle: GraphStyle,
-    dag: DAG<ParsedSolFile>,
+    dag: DAG<T>,
     height: number,
     width: number,
     camera: THREE.PerspectiveCamera,
-): RenderedNodes {
-    const threeNodes: ThreeGraphNode<ParsedSolFile>[] = [];
-    const portals: PortalParts[] = [];
+): RenderedNodes<T> {
+    const threeNodes: ThreeGraphNode<T>[] = [];
+    const portals: PortalParts<T>[] = [];
 
     for (const node of dag.nodes) {
         if (node.element) {
@@ -178,16 +178,16 @@ function nodeYIndexToPos(
     );
 }
 
-function fillEmptyNodes(
-    threeNodes: ThreeGraphNode<ParsedSolFile>[],
+function fillEmptyNodes<T>(
+    threeNodes: ThreeGraphNode<T>[],
     height: number,
     width: number,
     camera: THREE.PerspectiveCamera,
     graphStyle: GraphStyle,
-): ThreeGraphNode<ParsedSolFile>[] {
+): ThreeGraphNode<T>[] {
     const maxX = Math.max(...threeNodes.map((node) => node.xPos));
     const maxY = Math.max(...threeNodes.map((node) => node.yPos));
-    const emptyNodes: ThreeGraphNode<ParsedSolFile>[] = [];
+    const emptyNodes: ThreeGraphNode<T>[] = [];
     for (let x = 1; x <= maxX; x++) {
         for (let y = 0; y <= maxY; y++) {
             if (

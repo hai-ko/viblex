@@ -5,7 +5,6 @@ import {
     CSS3DRenderer,
 } from 'three/examples/jsm/renderers/CSS3DRenderer';
 import * as THREE from 'three';
-import { ParsedSolFile } from '../lib/ParseSolidity';
 import { DAG, ThreeGraphNode } from './NodePosition';
 // @ts-ignore
 import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
@@ -13,7 +12,7 @@ import { showImportPaths } from './EdgeSegments';
 import { DefaultGraphStyle, GraphStyle } from './GraphStyle';
 import { createNodes, PortalParts } from './Node';
 import React from 'react';
-import { GraphViewState } from './Graph';
+import { GraphViewState } from './ContractGraph';
 
 export interface Three {
     camera: PerspectiveCamera;
@@ -22,9 +21,9 @@ export interface Three {
     controls: TrackballControls;
 }
 
-export interface RenderedNodes {
-    threeNodes: ThreeGraphNode<ParsedSolFile>[];
-    portals: PortalParts[];
+export interface RenderedNodes<T> {
+    threeNodes: ThreeGraphNode<T>[];
+    portals: PortalParts<T>[];
     graphStyle: GraphStyle;
 }
 
@@ -90,10 +89,7 @@ export function animate(three: Three) {
     render(three);
 }
 
-function transform(
-    threeNodes: ThreeGraphNode<ParsedSolFile>[],
-    duration: number,
-) {
+function transform<T>(threeNodes: ThreeGraphNode<T>[], duration: number) {
     TWEEN.removeAll();
 
     for (const node of threeNodes) {
@@ -134,12 +130,12 @@ function transform(
         .start();
 }
 
-export function init(
+export function init<T>(
     setThree: React.Dispatch<React.SetStateAction<Three | undefined>>,
-    dag: DAG<ParsedSolFile>,
+    dag: DAG<T>,
     threeContainer: React.RefObject<HTMLDivElement>,
     setGraphViewState: (state: GraphViewState) => void,
-): RenderedNodes {
+): RenderedNodes<T> {
     const graphStyle = DefaultGraphStyle;
     const height = (threeContainer.current as any).clientHeight;
     const width = (threeContainer.current as any).clientWidth;

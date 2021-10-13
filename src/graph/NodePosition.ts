@@ -1,18 +1,16 @@
-import { Parse, ParsedSolFile } from '../lib/ParseSolidity';
-import type { PluginApi } from '@remixproject/plugin-utils';
-import { PluginClient } from '@remixproject/plugin';
+import { ParsedSolFile } from '../lib/ParseSolidity';
 import * as R from 'ramda';
-import { IRemixApi } from '@remixproject/plugin-api';
-import { getAllRemixFiles } from '../remix-utils/RemixFileHandler';
 import { buildInputGraph, getImportRootFiles } from '../lib/FileHandling';
-import {
-    getIncomingEdges,
-    Edge,
-    getElementById,
-    getOutgoingEdges,
-} from '../lib/Graph';
+import { getIncomingEdges, Edge, getOutgoingEdges } from '../lib/Graph';
 import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer';
-import { Vector3 } from 'three';
+import {
+    Context,
+    createInheritanceEdges,
+    getAllContracts,
+    getContractId,
+    getRootContracts,
+} from '../lib/ContractHandling';
+import { ContractDefinition } from '@solidity-parser/parser/dist/src/ast-types';
 
 export interface DAG<T> {
     nodes: GraphNode<T>[];
@@ -34,142 +32,69 @@ export interface ThreeGraphNode<T> extends GraphNode<T> {
     initialPosition?: { x: number; y: number };
 }
 
-export async function getNodePositionOld(
-    client: PluginClient<any, Readonly<IRemixApi>> &
-        PluginApi<Readonly<IRemixApi>>,
-    solParser: Parse,
-): Promise<DAG<ParsedSolFile>> {
-    const newFiles = await getAllRemixFiles(client, solParser);
-
-    const edges = buildInputGraph(newFiles);
-
-    const newRootFiles = getImportRootFiles(newFiles, edges);
-
-    const buildTreeForChilds = (startXPos: number, startYPos: number) =>
-        R.addIndex<ParsedSolFile, GraphNode<ParsedSolFile>[]>(R.map)(
-            (
-                parsedSolFile: ParsedSolFile,
-                index: number,
-            ): GraphNode<ParsedSolFile>[] =>
-                buildTree(parsedSolFile, startXPos + 1, startYPos + index),
-        );
-
-    const buildTree = (
-        root: ParsedSolFile,
-        startXPos: number,
-        startYPos: number,
-    ): GraphNode<ParsedSolFile>[] => {
-        const addRootElement = (
-            elements: GraphNode<ParsedSolFile>[],
-        ): GraphNode<ParsedSolFile>[] => [
-            { xPos: startXPos, yPos: startYPos, element: root, id: root.path },
-            ...elements,
-        ];
-
-        const retrieveIncomingEdges = (element: ParsedSolFile): Edge[] =>
-            getIncomingEdges(element.path, edges);
-
-        const incomingEdgeToElement = (edge: Edge): ParsedSolFile | undefined =>
-            getElementById<ParsedSolFile>(edge.from, 'path', newFiles);
-
-        const removeUndefineds = (
-            elements: (ParsedSolFile | undefined)[],
-        ): ParsedSolFile[] =>
-            R.filter(
-                (element) => element !== undefined,
-                elements,
-            ) as ParsedSolFile[];
-
-        return R.pipe(
-            retrieveIncomingEdges,
-            R.map(incomingEdgeToElement),
-            removeUndefineds,
-            buildTreeForChilds(startXPos, startYPos),
-            R.unnest,
-            addRootElement,
-        )(root);
-    };
-
-    return {
-        edges,
-        nodes: R.pipe(
-            buildTreeForChilds(0, 1),
-            R.unnest,
-            R.uniqWith((nodeA, nodeB) => nodeA.id === nodeB.id),
-        )(newRootFiles),
-    };
+function buildLayer<T>(
+    startXPos: number,
+    startYPos: number,
+    idCreation: (element: T) => string,
+) {
+    return R.addIndex<T, GraphNode<T>>(R.map)(
+        (element: T, index: number): GraphNode<T> => ({
+            xPos: startXPos + 1,
+            yPos: startYPos + index,
+            element,
+            id: idCreation(element),
+        }),
+    );
 }
 
-export async function getNodePosition(
-    client: PluginClient<any, Readonly<IRemixApi>> &
-        PluginApi<Readonly<IRemixApi>>,
-    solParser: Parse,
-): Promise<DAG<ParsedSolFile>> {
-    const newFiles = await getAllRemixFiles(client, solParser);
+export async function createDAG<T>(
+    rawNodes: T[],
+    rootRawNodes: T[],
+    edges: Edge[],
+    getId: (element: T) => string,
+): Promise<DAG<T>> {
+    const retrieveIncomingEdges = (element: T): Edge[] =>
+        getIncomingEdges(getId(element), edges);
 
-    const edges = buildInputGraph(newFiles);
+    const retrieveOutgoingEdges = (element: T): Edge[] =>
+        getOutgoingEdges(getId(element), edges);
 
-    const newRootFiles = getImportRootFiles(newFiles, edges);
+    const edgeToFromRawNode = (edge: Edge): T | undefined =>
+        R.find((element: T) => getId(element) === edge.from, rawNodes);
 
-    const retrieveIncomingEdges = (element: ParsedSolFile): Edge[] =>
-        getIncomingEdges(element.path, edges);
-
-    const buildLayer = (startXPos: number, startYPos: number) =>
-        R.addIndex<ParsedSolFile, GraphNode<ParsedSolFile>>(R.map)(
-            (
-                parsedSolFile: ParsedSolFile,
-                index: number,
-            ): GraphNode<ParsedSolFile> => ({
-                xPos: startXPos + 1,
-                yPos: startYPos + index,
-                element: parsedSolFile,
-                id: parsedSolFile.path,
-            }),
-        );
-
-    const retrieveOutgoingEdges = (element: ParsedSolFile): Edge[] =>
-        getOutgoingEdges(element.path, edges);
-
-    const edgeToFromFile = (edge: Edge): ParsedSolFile | undefined =>
-        R.find((file: ParsedSolFile) => file.path === edge.from, newFiles);
-
-    const edgePointsOnlyToFiles = (files: ParsedSolFile[], edge: Edge) =>
+    const edgePointsOnlyToRawNodes = (rawNodes: T[], edge: Edge) =>
         R.pipe(
-            R.map((file: ParsedSolFile) => file.path),
+            R.map((rawNode: T) => getId(rawNode)),
             R.includes(edge.to),
-        )(files);
+        )(rawNodes);
 
-    const filePointsOnlyToFiles = (
-        files: ParsedSolFile[],
-        edgesPerFile: Edge[],
+    const rawNodePointsOnlyToRawNodes = (
+        rawNodes: T[],
+        edgesPerRawNode: Edge[],
     ): boolean =>
         R.pipe(
-            R.map((edgePerFile: Edge) =>
-                edgePointsOnlyToFiles(files, edgePerFile),
+            R.map((edgePerRawNode: Edge) =>
+                edgePointsOnlyToRawNodes(rawNodes, edgePerRawNode),
             ),
             R.none((a: boolean) => a === false),
-        )(edgesPerFile);
+        )(edgesPerRawNode);
 
-    const onlyFilesPointingToFiles = (
-        files: ParsedSolFile[],
-        edges: Edge[][],
-    ) =>
-        R.filter((edges: Edge[]) => filePointsOnlyToFiles(files, edges), edges);
+    const onlyRawNodePointingToRawNodes = (rawNodes: T[], edges: Edge[][]) =>
+        R.filter(
+            (edges: Edge[]) => rawNodePointsOnlyToRawNodes(rawNodes, edges),
+            edges,
+        );
 
-    const fileIsNotIncluded = (
-        existingNodeIds: string[],
-        file: ParsedSolFile,
-    ) => !R.includes(file.path, existingNodeIds);
+    const rawNodeIsNotIncluded = (existingNodeIds: string[], rawNode: T) =>
+        !R.includes(getId(rawNode), existingNodeIds);
 
     const getLayerFiles = (
         startXPos: number,
         startYPos: number,
-        lowerLayerFiles: ParsedSolFile[],
+        lowerLayerNodes: T[],
         existingNodeIds: string[],
-    ): GraphNode<ParsedSolFile>[] => {
-        const nextLayer = (
-            nodes: GraphNode<ParsedSolFile>[],
-        ): GraphNode<ParsedSolFile>[] =>
+    ): GraphNode<T>[] => {
+        const nextLayer = (nodes: GraphNode<T>[]): GraphNode<T>[] =>
             nodes.length > 0
                 ? [
                       ...nodes,
@@ -177,49 +102,71 @@ export async function getNodePosition(
                           startXPos + 1,
                           startYPos,
                           [
-                              ...lowerLayerFiles,
-                              ...nodes.map((n) => n.element as ParsedSolFile),
+                              ...lowerLayerNodes,
+                              ...nodes.map((n) => n.element as T),
                           ],
                           [...R.map(R.prop('id'), nodes), ...existingNodeIds],
                       ),
                   ]
                 : [...nodes];
 
-        const onlyToLowerLayer = (element: ParsedSolFile[]) =>
+        const onlyToLowerLayer = (element: T[]) =>
             R.pipe(
                 R.map(retrieveOutgoingEdges),
                 (edges: Edge[][]) =>
-                    onlyFilesPointingToFiles(lowerLayerFiles, edges),
+                    onlyRawNodePointingToRawNodes(lowerLayerNodes, edges),
                 R.unnest,
-                R.map<Edge, ParsedSolFile | undefined>(edgeToFromFile),
+                R.map<Edge, T | undefined>(edgeToFromRawNode),
             )(element);
 
         return R.pipe(
             R.map(retrieveIncomingEdges),
+
             R.unnest,
-            R.map<Edge, ParsedSolFile | undefined>(edgeToFromFile),
-            R.reject(R.isNil) as () => ParsedSolFile[],
+            R.map<Edge, T | undefined>(edgeToFromRawNode),
+            R.reject(R.isNil) as () => T[],
             onlyToLowerLayer,
-            R.reject(R.isNil) as () => ParsedSolFile[],
-            R.uniqWith(
-                (a: ParsedSolFile, b: ParsedSolFile) => a.path === b.path,
-            ),
-            R.filter(R.curry(fileIsNotIncluded)(existingNodeIds)),
-            buildLayer(startXPos, startYPos),
+            R.reject(R.isNil) as () => T[],
+            R.uniqWith((a: T, b: T) => getId(a) === getId(b)),
+            R.filter(R.curry(rawNodeIsNotIncluded)(existingNodeIds)),
+            buildLayer<T>(startXPos, startYPos, (node) => getId(node)),
             nextLayer,
-        )(lowerLayerFiles);
+        )(lowerLayerNodes);
     };
 
     return {
         edges,
         nodes: [
-            ...buildLayer(0, 0)(newRootFiles),
-            ...getLayerFiles(
-                1,
-                0,
-                newRootFiles,
-                R.map(R.prop('path'), newRootFiles),
-            ),
+            ...buildLayer<T>(0, 0, getId)(rootRawNodes),
+            ...getLayerFiles(1, 0, rootRawNodes, R.map(getId, rootRawNodes)),
         ],
     };
+}
+
+export async function getContractsDAG(filesDAG: DAG<ParsedSolFile>) {
+    const edges = createInheritanceEdges(filesDAG);
+
+    const contracts = getAllContracts(filesDAG);
+
+    return createDAG<Context<ParsedSolFile, ContractDefinition>>(
+        contracts,
+        getRootContracts(contracts, edges),
+        edges,
+        getContractId,
+    );
+}
+
+export async function getFilesDAG(
+    files: ParsedSolFile[],
+): Promise<DAG<ParsedSolFile>> {
+    const edges = buildInputGraph(files);
+
+    const newRootFiles = getImportRootFiles(files, edges);
+
+    return createDAG<ParsedSolFile>(
+        files,
+        newRootFiles,
+        edges,
+        (file: ParsedSolFile) => file.path,
+    );
 }

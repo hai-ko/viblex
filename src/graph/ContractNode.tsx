@@ -6,9 +6,11 @@ import { GraphStyle } from './GraphStyle';
 import Icon from './Icon';
 import { GraphNode } from './NodePosition';
 import { GraphViewState } from './ContractGraph';
+import { Context } from '../lib/ContractHandling';
+import { ContractDefinition } from '@solidity-parser/parser/dist/src/ast-types';
 
 interface FileNodeProps {
-    node: GraphNode<ParsedSolFile>;
+    node: GraphNode<Context<ParsedSolFile, ContractDefinition>>;
     graphStyle: GraphStyle;
     onMouseLeave?: () => void;
     onMouseOver?: () => void;
@@ -19,42 +21,20 @@ interface FileNodeProps {
     setNodeToMax?: (nodeId: string | undefined) => void;
 }
 
-export function getIcon(element: ParsedSolFile | undefined): JSX.Element {
-    if (element?.error) {
-        return <Icon iconClass="fas fa-exclamation-circle" />;
-    }
-
-    if (element) {
-        switch (element.type) {
-            case 'http':
-            case 'https':
-            case 'ipfs':
-            case 'swarm':
-                return <Icon iconClass="far fa-file-alt" />;
-
-            case 'github':
-                return <Icon iconClass="fab fa-gitpub" />;
-
-            default:
-                return <Icon iconClass="fas fa-file-alt" />;
-        }
-    } else {
-        return <Icon iconClass="fas fa-file-alt" />;
+function getIcon(kind: string): JSX.Element {
+    switch (kind) {
+        case 'interface':
+            return <Icon iconClass="fas fa-file-export" />;
+        case 'library':
+            return <Icon iconClass="fas fa-book" />;
+        case 'abstract':
+        case 'contract':
+        default:
+            return <Icon iconClass="fas fa-file-contract" />;
     }
 }
 
-function FileNode(props: FileNodeProps) {
-    const icon = getIcon(props.node.element);
-
-    let version: string | undefined;
-
-    if (props.node.element?.parsedContent) {
-        const solVersionPragma = getPragmas(
-            props.node.element.parsedContent.children,
-        ).find((pragma) => pragma.name === 'solidity');
-        version = solVersionPragma && solVersionPragma.value;
-    }
-
+function ContractNode(props: FileNodeProps) {
     const isNodeSelected =
         props.selectedNodeId === props.node.id ||
         props.nodeToMax === props.node.id;
@@ -77,12 +57,10 @@ function FileNode(props: FileNodeProps) {
     return props.node.element ? (
         <div
             className={`node ${
-                props.node.element?.error
-                    ? 'error-node'
-                    : props.node.element?.type
-                    ? 'external-node'
-                    : 'local-node'
-            } file`}
+                props.node.element.element.kind === 'contract'
+                    ? 'contract-node'
+                    : 'contract-other'
+            }`}
             style={nodeDivStyle}
             onMouseDown={() => {
                 if (
@@ -117,28 +95,22 @@ function FileNode(props: FileNodeProps) {
         >
             <div className="row">
                 <div className="col file-title text-left">
-                    {icon}&nbsp;&nbsp;
-                    {getFileDisplayName(props.node.element.path)}
+                    {getIcon(props.node.element.element.kind)}
+                    &nbsp;&nbsp;
+                    {getFileDisplayName(props.node.element.element.name)}
                 </div>
             </div>
-            {version && isNodeSelected && (
-                <div className="row file-info">
-                    <div className="col-1 text-center d-flex align-content-center flex-wrap">
-                        <Icon iconClass="fas fa-tags" />
-                    </div>
-                    <div className="col-10">{version}</div>
-                </div>
-            )}
             {isNodeSelected && (
-                <div className="row file-info">
-                    <div className="col-1 text-center d-flex align-content-center flex-wrap">
-                        <Icon iconClass="fas fa-folder-open" />
+                <div className="row kind-info">
+                    <div className="col-12">
+                        <span className="badge bg-light text-dark">
+                            {props.node.element.element.kind}
+                        </span>
                     </div>
-                    <div className="col-10">{props.node.element.path}</div>
                 </div>
             )}
         </div>
     ) : null;
 }
 
-export default FileNode;
+export default ContractNode;

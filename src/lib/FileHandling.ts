@@ -149,9 +149,6 @@ async function retrieveExternalContent(
         }
     };
 
-    // const isDuplicateFile = (iDA: ParsedSolFile, iDB: ParsedSolFile) =>
-    //     iDA.path === iDB.path;
-
     return R.pipe(
         getImports,
         R.map(resolveImportPathToAbsoluteUrl),

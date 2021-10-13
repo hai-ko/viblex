@@ -8,7 +8,9 @@ import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
 import { PerspectiveCamera, Vector3 } from 'three';
 import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls';
 
-export function restoreOriginal(renderedNodes: RenderedNodes | undefined) {
+export function restoreOriginal<T>(
+    renderedNodes: RenderedNodes<T> | undefined,
+) {
     if (renderedNodes) {
         renderedNodes.threeNodes.forEach((node) => {
             if (node.objectCSS && node.initialPosition) {
@@ -26,10 +28,10 @@ export function restoreOriginal(renderedNodes: RenderedNodes | undefined) {
     }
 }
 
-function transformSelectedNodes(
-    node: ThreeGraphNode<ParsedSolFile>,
+function transformSelectedNodes<T>(
+    node: ThreeGraphNode<T>,
     style: GraphStyle,
-    selectedNode: ThreeGraphNode<ParsedSolFile>,
+    selectedNode: ThreeGraphNode<T>,
 ) {
     if (node.yPos > selectedNode.yPos) {
         if (node.initialPosition && node.objectCSS) {
@@ -57,8 +59,8 @@ function transformSelectedNodes(
     }
 }
 
-export function centerNode(
-    selectedNode: ThreeGraphNode<ParsedSolFile>,
+export function centerNode<T>(
+    selectedNode: ThreeGraphNode<T>,
     camera: PerspectiveCamera | undefined,
     controls: TrackballControls | undefined,
     onComplete: () => void,
@@ -90,9 +92,9 @@ export function centerNode(
     }
 }
 
-export function expendNode(
+export function expendNode<T>(
     selectedNodeId: string | undefined,
-    renderedNodes: RenderedNodes | undefined,
+    renderedNodes: RenderedNodes<T> | undefined,
 ) {
     restoreOriginal(renderedNodes);
     const selectedNode =
