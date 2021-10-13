@@ -20,6 +20,10 @@ interface FileNodeProps {
 }
 
 export function getIcon(element: ParsedSolFile | undefined): JSX.Element {
+    if (element?.error) {
+        return <Icon iconClass="fas fa-exclamation-circle" />;
+    }
+
     if (element) {
         switch (element.type) {
             case 'http':
@@ -73,7 +77,11 @@ function FileNode(props: FileNodeProps) {
     return props.node.element ? (
         <div
             className={`node ${
-                props.node.element?.type ? 'external-node' : 'local-node'
+                props.node.element?.error
+                    ? 'error-node'
+                    : props.node.element?.type
+                    ? 'external-node'
+                    : 'local-node'
             } file`}
             style={nodeDivStyle}
             onMouseDown={() => {
@@ -108,7 +116,8 @@ function FileNode(props: FileNodeProps) {
             }}
         >
             <div className="row">
-                <div className="col file-title text-center">
+                <div className="col file-title text-left">
+                    {icon}&nbsp;&nbsp;
                     {getFileDisplayName(props.node.element.path)}
                 </div>
             </div>
@@ -123,7 +132,7 @@ function FileNode(props: FileNodeProps) {
             {isNodeSelected && (
                 <div className="row file-info">
                     <div className="col-1 text-center d-flex align-content-center flex-wrap">
-                        {icon}
+                        <Icon iconClass="fas fa-folder-open" />
                     </div>
                     <div className="col-10">{props.node.element.path}</div>
                 </div>

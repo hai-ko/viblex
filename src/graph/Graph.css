@@ -9,6 +9,7 @@
 
 }
 
+
 .file-view {
   
     padding: 1rem;
@@ -36,6 +37,10 @@
    
 
     background-color: rgba(0, 127, 127, 0.9);
+}
+
+.error-node {
+    background-color: rgba(206, 43, 43, 0.9);
 }
 
 .edge {
@@ -75,7 +80,7 @@
 }
 
 .node .file-title {
-    margin-top: 2rem;
+    margin-top: 3rem;
     margin-bottom: 1.5rem;
     font-size: 65px;
     font-weight: bold;

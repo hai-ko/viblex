@@ -3,10 +3,8 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import { getPragmas, ParsedSolFile } from '../lib/ParseSolidity';
 import { getFileDisplayName } from '../lib/FileHandling';
 import { GraphStyle } from './GraphStyle';
-import { useState } from 'react';
 import Icon from './Icon';
 import { GraphNode } from './NodePosition';
-import { getIcon } from './FileNode';
 import ViewEntry from './ViewEntry';
 
 interface FileViewProps {
@@ -16,8 +14,6 @@ interface FileViewProps {
 }
 
 function FileView(props: FileViewProps) {
-    const icon = getIcon(props.node.element);
-
     let version: string | undefined;
 
     if (props.node.element?.parsedContent) {
@@ -30,7 +26,11 @@ function FileView(props: FileViewProps) {
     return props.node.element ? (
         <div
             className={`file-view h-100 ${
-                props.node.element?.type ? 'external-node' : 'local-node'
+                props.node.element?.error
+                    ? 'error-node'
+                    : props.node.element?.type
+                    ? 'external-node'
+                    : 'local-node'
             } file`}
         >
             <div className="row">
@@ -74,6 +74,21 @@ function FileView(props: FileViewProps) {
                     content={props.node.element.path}
                     top={version ? false : true}
                 />
+                {props.node.element.error && (
+                    <>
+                        <div className="row ">
+                            <div className="col view-headline text-left">
+                                <Icon iconClass="fas fa-exclamation-circle" />{' '}
+                                Error
+                            </div>
+                        </div>
+                        <ViewEntry
+                            title="Message"
+                            content={props.node.element.error}
+                            top={true}
+                        />
+                    </>
+                )}
             </div>
         </div>
     ) : null;
