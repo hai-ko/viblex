@@ -12,12 +12,16 @@ import {
     Three,
 } from './ThreeEnv';
 import ReactDOM from 'react-dom';
-import FileNode from './FileNode';
 import { centerNode, expendNode } from './NodeSelection';
-import FileView from './FileView';
+import { ContractDefinition } from '@solidity-parser/parser/dist/src/ast-types';
+import { Context } from '../lib/ContractHandling';
+import ContractNode from './ContractNode';
+import ContractView from './ContractView';
 
 interface GraphProps {
-    dag: DAG<ParsedSolFile>;
+    view: string;
+    setView: (view: string) => void;
+    contractsDag: DAG<Context<ParsedSolFile, ContractDefinition>>;
 }
 
 export enum GraphViewState {
@@ -44,14 +48,15 @@ function zoomOut(three: Three | undefined) {
     }
 }
 
-function Graph(props: GraphProps) {
+function ContractGraph(props: GraphProps) {
     const [three, setThree] = useState<Three | undefined>();
     const [selectedNodeId, setSelectedNodeId] = useState<string | undefined>();
     const [graphViewState, setGraphViewState] = useState<GraphViewState>(
         GraphViewState.Wait,
     );
     const threeContainer = useRef<HTMLDivElement>(null);
-    const [renderedNodes, setRenderedNodes] = useState<RenderedNodes>();
+    const [renderedNodes, setRenderedNodes] =
+        useState<RenderedNodes<Context<ParsedSolFile, ContractDefinition>>>();
 
     const exitMaxNode = () => {
         setGraphViewState(GraphViewState.Ready);
@@ -72,10 +77,15 @@ function Graph(props: GraphProps) {
     useEffect(() => {
         if (threeContainer && !three) {
             setRenderedNodes(
-                init(setThree, props.dag, threeContainer, setGraphViewState),
+                init(
+                    setThree,
+                    props.contractsDag,
+                    threeContainer,
+                    setGraphViewState,
+                ),
             );
         }
-    }, [threeContainer, three, props]);
+    }, [threeContainer, three, props, props.contractsDag]);
 
     useEffect(() => {
         if (three) {
@@ -105,7 +115,7 @@ function Graph(props: GraphProps) {
     const portals = renderedNodes
         ? renderedNodes.portals.map((portalPart) =>
               ReactDOM.createPortal(
-                  <FileNode
+                  <ContractNode
                       graphStyle={portalPart.graphStyle}
                       node={portalPart.node}
                       onMouseLeave={portalPart.onMouseLeave}
@@ -124,7 +134,7 @@ function Graph(props: GraphProps) {
     return (
         <>
             {maxedNode && renderedNodes && (
-                <FileView
+                <ContractView
                     graphStyle={renderedNodes.graphStyle}
                     node={maxedNode}
                     exitMaxNode={exitMaxNode}
@@ -139,10 +149,12 @@ function Graph(props: GraphProps) {
                 <Menu
                     zoomIn={() => zoomIn(three)}
                     zoomOut={() => zoomOut(three)}
+                    setView={props.setView}
+                    defaultView={props.view}
                 />
             </div>
         </>
     );
 }
 
-export default Graph;
+export default ContractGraph;

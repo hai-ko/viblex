@@ -44,9 +44,9 @@ function FileView(props: FileViewProps) {
                     </button>
                 </div>
             </div>
-            <div className="container file-view-container">
+            <div className="container view-container">
                 <div className="row ">
-                    <div className="col file-title text-center">
+                    <div className="col title text-center">
                         {getFileDisplayName(props.node.element.path)}
                     </div>
                 </div>

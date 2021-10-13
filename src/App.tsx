@@ -4,12 +4,12 @@ import type { PluginApi } from '@remixproject/plugin-utils';
 import { PluginClient } from '@remixproject/plugin';
 import { createClient } from '@remixproject/plugin-webview';
 import { IRemixApi } from '@remixproject/plugin-api';
-import Graph from './graph/Graph';
 // import 'bootstrap/dist/css/bootstrap.min.css';
 // import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-import { DAG, getNodePosition } from './graph/NodePosition';
 import { ParsedSolFile } from './lib/ParseSolidity';
 import { useRef } from 'react';
+import { getAllRemixFiles } from './remix-utils/RemixFileHandler';
+import GraphContainer from './graph/GraphContainer';
 
 function App() {
     const [client, setClient] = useState<
@@ -17,7 +17,8 @@ function App() {
               PluginApi<Readonly<IRemixApi>>)
         | undefined
     >();
-    const [dag, setDAG] = useState<DAG<ParsedSolFile>>();
+
+    const [files, setFiles] = useState<ParsedSolFile[]>();
 
     useEffect(() => {
         if (!client) {
@@ -30,7 +31,7 @@ function App() {
                 //@ts-ignore
                 const solidityParser = SolidityParser.parse;
 
-                setDAG(await getNodePosition(client, solidityParser));
+                setFiles(await getAllRemixFiles(client, solidityParser));
             });
             setClient(client);
         }
@@ -40,7 +41,9 @@ function App() {
 
     return (
         <div className="App h-100 w-100" ref={graphContainer}>
-            {graphContainer.current && dag && <Graph dag={dag} />}
+            {graphContainer.current && files && (
+                <GraphContainer files={files} />
+            )}
         </div>
     );
 }
