@@ -6,7 +6,7 @@ import { ThreeGraphNode } from './NodePosition';
 export function showImportPaths<T>(
     edges: Edge[],
     nodes: ThreeGraphNode<T>[],
-    exec: (o: CSS3DObject) => void,
+    exec: (o: CSS3DObject, isLeftArrow?: boolean) => void,
 ) {
     for (const edge of edges) {
         const fromNode = nodes.find((node) => node.id === edge.from);
@@ -14,6 +14,7 @@ export function showImportPaths<T>(
         if (fromNode && toNode) {
             exec(fromNode.segments[0]);
             exec(toNode.segments[1]);
+            exec(toNode.segments[5], true);
             if (fromNode.xPos - toNode.xPos > 1) {
                 exec(toNode.segments[3]);
                 exec(toNode.segments[4]);
@@ -94,9 +95,12 @@ export const getSegmentValues = [
 
     (x: number, y: number, graphStyle: GraphStyle): number[] => {
         return [
-            x + graphStyle.ELEMENT_WIDTH / 2 + graphStyle.COL_DISTANCE / 4,
+            x +
+                graphStyle.ELEMENT_WIDTH / 2 +
+                graphStyle.COL_DISTANCE / 4 +
+                (graphStyle.SEGMENT_THICKNESS * 3) / 2,
             y,
-            graphStyle.COL_DISTANCE / 2,
+            graphStyle.COL_DISTANCE / 2 - graphStyle.SEGMENT_THICKNESS * 3,
             graphStyle.SEGMENT_THICKNESS,
         ];
     },
@@ -129,14 +133,38 @@ export const getSegmentValues = [
             graphStyle.SEGMENT_THICKNESS,
         ];
     },
+    (x: number, y: number, graphStyle: GraphStyle): number[] => {
+        return [
+            x +
+                graphStyle.ELEMENT_WIDTH / 2 +
+                (graphStyle.SEGMENT_THICKNESS * 3) / 2,
+            y,
+            graphStyle.COL_DISTANCE / 2,
+            graphStyle.SEGMENT_THICKNESS,
+        ];
+    },
 ];
 
 export function getSegments(x: number, y: number, graphStyle: GraphStyle) {
-    const getSegment = (values: number[]): CSS3DObject => {
+    const getSegment = (
+        values: number[],
+        isLeftArrow?: boolean,
+    ): CSS3DObject => {
         const segment = document.createElement('div');
-        segment.className = 'edge';
-        segment.style.width = values[2] + 'px';
-        segment.style.height = values[3] + 'px';
+        segment.className = isLeftArrow ? '' : 'edge';
+        segment.style.width = isLeftArrow ? '0px' : values[2] + 'px';
+        segment.style.height = isLeftArrow ? '0px' : values[3] + 'px';
+
+        if (isLeftArrow) {
+            segment.style.borderTop =
+                graphStyle.SEGMENT_THICKNESS * 3 + 'px solid transparent';
+            segment.style.borderBottom =
+                graphStyle.SEGMENT_THICKNESS * 3 + 'px solid transparent';
+            segment.style.borderRight =
+                graphStyle.SEGMENT_THICKNESS * 3 +
+                'px solid ' +
+                graphStyle.SEGMENT_COLOR;
+        }
 
         const segmentObject = new CSS3DObject(segment);
         segmentObject.position.x = values[0];
@@ -151,6 +179,7 @@ export function getSegments(x: number, y: number, graphStyle: GraphStyle) {
         getSegment(getSegmentValues[2](x, y, graphStyle)),
         getSegment(getSegmentValues[3](x, y, graphStyle)),
         getSegment(getSegmentValues[4](x, y, graphStyle)),
+        getSegment(getSegmentValues[5](x, y, graphStyle), true),
     ];
 
     return {

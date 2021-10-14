@@ -60,18 +60,24 @@ export function createNodes(
                 showImportPaths(
                     dag.edges,
                     [...threeNodes, ...emptyNodes],
-                    (o: CSS3DObject) =>
-                        (o.element.style.backgroundColor =
-                            graphStyle.SEGMENT_NOT_HIGHLIGHTED_COLOR),
+                    (o: CSS3DObject, isLeftArrow?: boolean) =>
+                        isLeftArrow
+                            ? (o.element.style.borderRightColor =
+                                  graphStyle.SEGMENT_NOT_HIGHLIGHTED_COLOR)
+                            : (o.element.style.backgroundColor =
+                                  graphStyle.SEGMENT_NOT_HIGHLIGHTED_COLOR),
                 );
                 showImportPaths(
                     dag.edges.filter(
                         (edge) => edge.from === node.id || edge.to === node.id,
                     ),
                     [...threeNodes, ...emptyNodes],
-                    (o: CSS3DObject) =>
-                        (o.element.style.backgroundColor =
-                            graphStyle.SEGMENT_HIGHLIGHTED_COLOR),
+                    (o: CSS3DObject, isLeftArrow?: boolean) =>
+                        isLeftArrow
+                            ? (o.element.style.borderRightColor =
+                                  graphStyle.SEGMENT_HIGHLIGHTED_COLOR)
+                            : (o.element.style.backgroundColor =
+                                  graphStyle.SEGMENT_HIGHLIGHTED_COLOR),
                 );
             };
 
@@ -79,9 +85,12 @@ export function createNodes(
                 showImportPaths(
                     dag.edges,
                     [...threeNodes, ...emptyNodes],
-                    (o: CSS3DObject) =>
-                        (o.element.style.backgroundColor =
-                            graphStyle.SEGMENT_COLOR),
+                    (o: CSS3DObject, isLeftArrow?: boolean) =>
+                        isLeftArrow
+                            ? (o.element.style.borderRightColor =
+                                  graphStyle.SEGMENT_COLOR)
+                            : (o.element.style.backgroundColor =
+                                  graphStyle.SEGMENT_COLOR),
                 );
             };
 
