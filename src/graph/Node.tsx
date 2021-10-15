@@ -60,7 +60,7 @@ export function createNodes<T>(
                 showImportPaths(
                     dag.edges,
                     [...threeNodes, ...emptyNodes],
-                    (o: CSS3DObject, isLeftArrow?: boolean) =>
+                    (o: CSS3DObject, xPos: number, isLeftArrow?: boolean) =>
                         isLeftArrow
                             ? (o.element.style.borderRightColor =
                                   graphStyle.SEGMENT_NOT_HIGHLIGHTED_COLOR)
@@ -72,7 +72,7 @@ export function createNodes<T>(
                         (edge) => edge.from === node.id || edge.to === node.id,
                     ),
                     [...threeNodes, ...emptyNodes],
-                    (o: CSS3DObject, isLeftArrow?: boolean) =>
+                    (o: CSS3DObject, xPos: number, isLeftArrow?: boolean) =>
                         isLeftArrow
                             ? (o.element.style.borderRightColor =
                                   graphStyle.SEGMENT_HIGHLIGHTED_COLOR)
@@ -85,7 +85,7 @@ export function createNodes<T>(
                 showImportPaths(
                     dag.edges,
                     [...threeNodes, ...emptyNodes],
-                    (o: CSS3DObject, isLeftArrow?: boolean) =>
+                    (o: CSS3DObject, xPos: number, isLeftArrow?: boolean) =>
                         isLeftArrow
                             ? (o.element.style.borderRightColor =
                                   graphStyle.SEGMENT_COLOR)

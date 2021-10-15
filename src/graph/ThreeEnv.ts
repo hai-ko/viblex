@@ -165,12 +165,15 @@ export function init<T>(
 
     transform(nodes.threeNodes, graphStyle.ANIMATION_DURATION);
 
-    setTimeout(
-        () =>
-            showImportPaths(dag.edges, nodes.threeNodes, (o: CSS3DObject) => {
-                three.scene.add(o);
-            }),
-        graphStyle.ANIMATION_DURATION * 2,
+    const maxX = Math.max(...nodes.threeNodes.map((node) => node.xPos));
+    const stepDuration = graphStyle.ANIMATION_DURATION / maxX;
+
+    showImportPaths(
+        dag.edges,
+        nodes.threeNodes,
+        (o: CSS3DObject, xPos: number) => {
+            setTimeout(() => three.scene.add(o), xPos * stepDuration + 1);
+        },
     );
 
     window.addEventListener(

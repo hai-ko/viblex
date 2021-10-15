@@ -6,24 +6,24 @@ import { ThreeGraphNode } from './NodePosition';
 export function showImportPaths<T>(
     edges: Edge[],
     nodes: ThreeGraphNode<T>[],
-    exec: (o: CSS3DObject, isLeftArrow?: boolean) => void,
+    exec: (o: CSS3DObject, xPos: number, isLeftArrow?: boolean) => void,
 ) {
     for (const edge of edges) {
         const fromNode = nodes.find((node) => node.id === edge.from);
         const toNode = nodes.find((node) => node.id === edge.to);
         if (fromNode && toNode) {
-            exec(fromNode.segments[0]);
-            exec(toNode.segments[1]);
-            exec(toNode.segments[5], true);
+            exec(fromNode.segments[0], fromNode.xPos);
+            exec(toNode.segments[1], fromNode.xPos);
+            exec(toNode.segments[5], fromNode.xPos, true);
             if (fromNode.xPos - toNode.xPos > 1) {
-                exec(toNode.segments[3]);
-                exec(toNode.segments[4]);
+                exec(toNode.segments[3], fromNode.xPos);
+                exec(toNode.segments[4], fromNode.xPos);
                 for (let i = toNode.xPos + 1; i < fromNode.xPos - 1; i++) {
                     const node = nodes.find(
                         (n) => n.yPos === toNode.yPos && n.xPos === i,
                     );
                     if (node) {
-                        exec(node.segments[4]);
+                        exec(node.segments[4], fromNode.xPos);
                     }
                 }
             }
@@ -35,15 +35,15 @@ export function showImportPaths<T>(
                     );
                     if (node) {
                         if (i === fromNode.yPos) {
-                            exec(node.segments[3]);
+                            exec(node.segments[3], fromNode.xPos);
                         } else if (i === toNode.yPos) {
-                            exec(node.segments[2]);
+                            exec(node.segments[2], fromNode.xPos);
                             if (fromNode.xPos - toNode.xPos > 1) {
-                                exec(node.segments[3]);
+                                exec(node.segments[3], fromNode.xPos);
                             }
                         } else {
-                            exec(node.segments[2]);
-                            exec(node.segments[3]);
+                            exec(node.segments[2], fromNode.xPos);
+                            exec(node.segments[3], fromNode.xPos);
                         }
                     }
                 }
@@ -54,28 +54,28 @@ export function showImportPaths<T>(
                     );
                     if (node) {
                         if (i === fromNode.yPos) {
-                            exec(node.segments[2]);
+                            exec(node.segments[2], fromNode.xPos);
                         } else if (i === toNode.yPos) {
-                            exec(node.segments[3]);
+                            exec(node.segments[3], fromNode.xPos);
                             if (fromNode.xPos - toNode.xPos > 1) {
-                                exec(node.segments[2]);
+                                exec(node.segments[2], fromNode.xPos);
                             }
                         } else {
-                            exec(node.segments[2]);
-                            exec(node.segments[3]);
+                            exec(node.segments[2], fromNode.xPos);
+                            exec(node.segments[3], fromNode.xPos);
                         }
                     }
                 }
             } else {
                 if (fromNode.xPos - toNode.xPos > 1) {
-                    exec(toNode.segments[3]);
+                    exec(toNode.segments[3], fromNode.xPos);
                     const node = nodes.find(
                         (n) =>
                             n.xPos + 1 === fromNode.xPos &&
                             n.yPos === fromNode.yPos,
                     );
                     if (node) {
-                        exec(node.segments[3]);
+                        exec(node.segments[3], fromNode.xPos);
                     }
                 }
             }
