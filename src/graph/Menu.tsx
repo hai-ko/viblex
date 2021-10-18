@@ -6,6 +6,7 @@ import ViewSelect from './ViewSelect';
 interface MenuProps {
     zoomIn: () => void;
     zoomOut: () => void;
+    autoZoom: () => void;
     setView: (vieName: string) => void;
     defaultView: string;
 }
@@ -19,7 +20,7 @@ function Menu(props: MenuProps) {
             />
             <button
                 type="button"
-                className="btn btn-sm btn-primary menu-btn"
+                className="btn btn-sm btn-primary menu-btn menu-btn-space"
                 onClick={props.zoomIn}
             >
                 <Icon iconClass="fas fa-search-plus" />
@@ -30,6 +31,13 @@ function Menu(props: MenuProps) {
                 onClick={props.zoomOut}
             >
                 <Icon iconClass="fas fa-search-minus" />
+            </button>
+            <button
+                type="button"
+                className="btn btn-sm btn-primary menu-btn"
+                onClick={props.autoZoom}
+            >
+                <Icon iconClass="fas fa-expand" />
             </button>
         </div>
     );

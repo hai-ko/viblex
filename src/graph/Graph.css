@@ -57,6 +57,10 @@
     display: block;
 }
 
+.menu-btn-space {
+    margin-left: 2rem !important;
+}
+
 
 .menu-btn {
     color: rgba(255, 174, 52, 0.9);

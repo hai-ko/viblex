@@ -6,6 +6,7 @@ import { DAG } from './NodePosition';
 import Menu from './Menu';
 import {
     animate,
+    autoFit,
     init,
     onWindowResize,
     RenderedNodes,
@@ -61,8 +62,8 @@ function ContractGraph(props: GraphProps) {
     const exitMaxNode = () => {
         setGraphViewState(GraphViewState.Ready);
         setSelectedNodeId(undefined);
-        if (threeContainer && three) {
-            three.camera.position.z = 4200;
+        if (threeContainer && three && renderedNodes) {
+            autoFit(three, renderedNodes);
         }
     };
 
@@ -73,6 +74,12 @@ function ContractGraph(props: GraphProps) {
             onWindowResize(three, threeContainer, setThree);
         }
     }, [graphViewState]);
+
+    useEffect(() => {
+        if (three && renderedNodes) {
+            autoFit(three, renderedNodes);
+        }
+    }, [props.view, renderedNodes, three]);
 
     useEffect(() => {
         if (threeContainer && !three) {
@@ -131,6 +138,11 @@ function ContractGraph(props: GraphProps) {
           )
         : null;
 
+    const fit = () => {
+        if (three && renderedNodes) {
+            autoFit(three, renderedNodes);
+        }
+    };
     return (
         <>
             {maxedNode && renderedNodes && (
@@ -149,6 +161,7 @@ function ContractGraph(props: GraphProps) {
                 <Menu
                     zoomIn={() => zoomIn(three)}
                     zoomOut={() => zoomOut(three)}
+                    autoZoom={fit}
                     setView={props.setView}
                     defaultView={props.view}
                 />

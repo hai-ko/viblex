@@ -1,4 +1,4 @@
-import { PerspectiveCamera } from 'three';
+import { Camera, PerspectiveCamera, Vector3 } from 'three';
 import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls';
 import {
     CSS3DObject,
@@ -183,8 +183,72 @@ export function init<T>(
         false,
     );
 
+    autoFit(three, nodes);
+
     setThree(three);
     setGraphViewState(GraphViewState.Ready);
 
     return nodes;
+}
+
+export function autoFit<T>(three: Three, renderedNodes: RenderedNodes<T>) {
+    const boundingBox = new THREE.Box2();
+
+    for (const node of renderedNodes.threeNodes) {
+        if (node.object) {
+            boundingBox.expandByPoint(
+                new THREE.Vector2(
+                    node.object.position.x,
+                    node.object.position.y,
+                ),
+            );
+        }
+    }
+
+    const size = new THREE.Vector2();
+    boundingBox.getSize(size);
+
+    const center = new THREE.Vector2();
+    boundingBox.getCenter(center);
+
+    three.camera.position.x = center.x;
+    three.camera.position.y = center.y;
+    three.controls.target.copy(new THREE.Vector3(center.x, center.y, 0));
+
+    const fov = three.camera.fov * (Math.PI / 180);
+    const fovh = 2 * Math.atan(Math.tan(fov / 2) * three.camera.aspect);
+    const dx = Math.abs(
+        (size.x + renderedNodes.graphStyle.ELEMENT_WIDTH) /
+            2 /
+            Math.tan(fovh / 2),
+    );
+    const dy = Math.abs(
+        (size.y + renderedNodes.graphStyle.EXPAND_HEIGHT) /
+            2 /
+            Math.tan(fov / 2),
+    );
+
+    const coords = {
+        x: three.camera.position.x,
+        y: three.camera.position.y,
+        z: three.camera.position.z,
+    };
+    new TWEEN.Tween(coords)
+        .to(
+            {
+                x: three.camera.position.x,
+                y: three.camera.position.y,
+                z: Math.max(dx, dy) * 1.1,
+            },
+            500,
+        )
+        .easing(TWEEN.Easing.Quadratic.Out)
+        .onUpdate(() => {
+            three.camera.position.set(coords.x, coords.y, coords.z);
+        })
+        .start();
+
+    three.camera.updateProjectionMatrix();
+
+    three.controls.update();
 }
