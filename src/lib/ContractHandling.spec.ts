@@ -59,6 +59,13 @@ describe('ContractHandling', () => {
         },
     ];
 
+    const rawFilesD = [
+        {
+            path: '/ab.sol',
+            content: 'import "./x.sol"; contract A {} contract B is A {}',
+        },
+    ];
+
     test('getRootContracts', async () => {
         const parsedFiles = parseFiles(rawFiles, parse as any);
 
@@ -91,6 +98,19 @@ describe('ContractHandling', () => {
             {
                 from: 'B@/b.sol',
                 to: 'A@/a.sol',
+            },
+        ]);
+    });
+
+    test('createInheritanceEdges: same file inheritance', async () => {
+        const parsedFiles = parseFiles(rawFilesD, parse as any);
+
+        const filesDAG = await getFilesDAG(parsedFiles);
+
+        expect(createInheritanceEdges(filesDAG)).toEqual([
+            {
+                from: 'A@/ab.sol',
+                to: 'B@/ab.sol',
             },
         ]);
     });

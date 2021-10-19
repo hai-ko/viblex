@@ -112,15 +112,19 @@ export function createInheritanceEdges(filesDag: DAG<ParsedSolFile>) {
                             contract.element.name ===
                             inheritanceSpecifier.baseName.namePath,
                     ),
-
                     R.filter<
                         Context<ParsedSolFile, ContractDefinition>,
                         'array'
                     >((candidates) =>
-                        importPathExists(
-                            candidates.context.path,
-                            inheritanceContext.context.file.path,
-                            filesDag.edges,
+                        R.or(
+                            candidates.context.path ===
+                                inheritanceContext.context.file.path,
+
+                            importPathExists(
+                                candidates.context.path,
+                                inheritanceContext.context.file.path,
+                                filesDag.edges,
+                            ),
                         ),
                     ),
                 )(inheritanceContext.context.contracts),
