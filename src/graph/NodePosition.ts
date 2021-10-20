@@ -11,6 +11,7 @@ import {
     getRootContracts,
 } from '../lib/ContractHandling';
 import { ContractDefinition } from '@solidity-parser/parser/dist/src/ast-types';
+import { createCluster } from './NodePositionOptimizer';
 
 export interface DAG<T> {
     nodes: GraphNode<T>[];
@@ -21,6 +22,7 @@ export interface GraphNode<T> {
     id: string;
     xPos: number;
     yPos: number;
+    yRelative: number;
     element?: T;
 }
 
@@ -41,6 +43,7 @@ function buildLayer<T>(
         (element: T, index: number): GraphNode<T> => ({
             xPos: startXPos + 1,
             yPos: startYPos + index,
+            yRelative: index,
             element,
             id: idCreation(element),
         }),
@@ -134,12 +137,58 @@ export async function createDAG<T>(
         )(lowerLayerNodes);
     };
 
+    const nodes = [
+        ...buildLayer<T>(0, 0, getId)(rootRawNodes),
+        ...getLayerFiles(1, 0, rootRawNodes, R.map(getId, rootRawNodes)),
+    ];
+
+    const clusterMap = createCluster(
+        R.map((node: T) => getId(node))(rootRawNodes),
+        edges,
+    );
+
+    const nodePosForCluster = (clusterId: number, offset: number) => {
+        const filteredRootNodes = R.filter(
+            (rootRawNode) => clusterMap.get(getId(rootRawNode)) === clusterId,
+            rootRawNodes,
+        );
+        const nodes = [
+            ...buildLayer<T>(0, 0, getId)(filteredRootNodes),
+            ...getLayerFiles(
+                1,
+                0,
+                filteredRootNodes,
+                R.map(getId, filteredRootNodes),
+            ),
+        ];
+
+        return {
+            maxY: R.pipe(
+                R.map<GraphNode<T>, number>((node) => node.yPos),
+                R.reduce<number, number>(R.max, -Infinity),
+            )(nodes),
+            nodes: R.map<GraphNode<T>, GraphNode<T>>(
+                (node) => ({
+                    ...node,
+                    yPos: node.yPos + offset,
+                }),
+                nodes,
+            ),
+        };
+    };
+
+    let offsetNodes: GraphNode<T>[] = [];
+    let offset = 0;
+
+    for (const clusterId of R.uniq([...clusterMap.values()])) {
+        const nodeWithPost = nodePosForCluster(clusterId, offset);
+        offsetNodes = [...offsetNodes, ...nodeWithPost.nodes];
+        offset += nodeWithPost.maxY + 1;
+    }
+
     return {
         edges,
-        nodes: [
-            ...buildLayer<T>(0, 0, getId)(rootRawNodes),
-            ...getLayerFiles(1, 0, rootRawNodes, R.map(getId, rootRawNodes)),
-        ],
+        nodes: offsetNodes,
     };
 }
 

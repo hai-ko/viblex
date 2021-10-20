@@ -203,6 +203,7 @@ function fillEmptyNodes<T>(
                 emptyNodes.push({
                     xPos: x,
                     yPos: y,
+                    yRelative: 0,
                     id: 'empty' + x + y,
                     segments: segments.segments,
                     segmentsInitialValues: segments.initialValues,
