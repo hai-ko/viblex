@@ -5,6 +5,11 @@ export interface Edge {
     to: string;
 }
 
+export interface Context<C, E> {
+    context: C;
+    element: E;
+}
+
 export function getIncomingEdges(key: string, edges: Edge[]): Edge[] {
     return R.filter((edge: Edge) => edge.to === key, edges);
 }

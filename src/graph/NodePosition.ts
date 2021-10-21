@@ -1,10 +1,14 @@
 import { ParsedSolFile } from '../lib/ParseSolidity';
 import * as R from 'ramda';
 import { buildInputGraph, getImportRootFiles } from '../lib/FileHandling';
-import { getIncomingEdges, Edge, getOutgoingEdges } from '../lib/Graph';
+import {
+    getIncomingEdges,
+    Edge,
+    getOutgoingEdges,
+    Context,
+} from '../lib/Graph';
 import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer';
 import {
-    Context,
     createInheritanceEdges,
     getAllContracts,
     getContractId,

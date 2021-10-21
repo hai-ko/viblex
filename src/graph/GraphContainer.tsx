@@ -4,9 +4,9 @@ import React, { useEffect, useState } from 'react';
 import { ParsedSolFile } from '../lib/ParseSolidity';
 import { DAG, getContractsDAG, getFilesDAG } from './NodePosition';
 import { ContractDefinition } from '@solidity-parser/parser/dist/src/ast-types';
-import { Context } from '../lib/ContractHandling';
 import ContractGraph from './ContractGraph';
 import FileGraph from './FileGraph';
+import { Context } from '../lib/Graph';
 
 interface GraphContainerProps {
     files: ParsedSolFile[];

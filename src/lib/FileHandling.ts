@@ -16,9 +16,98 @@ import * as R from 'ramda';
 import { Folder } from '@remixproject/plugin-api';
 // @ts-ignore
 import Path from 'path-browserify';
-import { Edge } from './Graph';
+import { Context, Edge } from './Graph';
 
 const SOL_FILE_EXTENSION = 'sol';
+
+type FolderContext = Context<
+    {
+        getFolder: (path: string) => Promise<Folder>;
+        getFile: (path: string) => Promise<string>;
+    },
+    Folder
+>;
+
+type ImportDirectiveContext = Context<
+    {
+        resolveImport: (link: string) => Promise<ContentImport>;
+        solParser: Parse;
+    },
+    ImportDirective
+>;
+
+async function resolveFolder(
+    folderContext: FolderContext,
+): Promise<RawSolFile[]> {
+    const isSolidityFile = (path: string): boolean =>
+        folderContext.element[path].isDirectory ||
+        path.split('.').pop() === SOL_FILE_EXTENSION;
+
+    const resolveDirEntry = async (path: string): Promise<RawSolFile[]> =>
+        folderContext.element[path].isDirectory
+            ? await resolveFolder({
+                  context: folderContext.context,
+                  element: await folderContext.context.getFolder(path),
+              })
+            : [
+                  {
+                      path: Path.resolve(path),
+                      content: await folderContext.context.getFile(path),
+                  },
+              ];
+
+    return R.pipe(
+        R.filter(isSolidityFile) as (a: string[]) => string[],
+        R.map(resolveDirEntry),
+        (p) => Promise.all(p),
+        R.andThen(R.unnest),
+        R.andThen(R.uniqWith(isDuplicateFile)),
+    )(Object.keys(folderContext.element));
+}
+
+const execImport = async (
+    importDirectiveContext: ImportDirectiveContext,
+): Promise<ParsedSolFile[]> => {
+    try {
+        const contentImport =
+            await importDirectiveContext.context.resolveImport(
+                importDirectiveContext.element.path,
+            );
+
+        const parsedFiles = parseFiles(
+            [
+                {
+                    path: importDirectiveContext.element.path,
+                    content: contentImport.content,
+                    type: contentImport.type,
+                },
+            ],
+            importDirectiveContext.context.solParser,
+        );
+
+        return [
+            ...parsedFiles,
+            ...(parsedFiles[0].parsedContent
+                ? await retrieveExternalContent(
+                      parsedFiles[0].parsedContent?.children,
+                      importDirectiveContext.context.resolveImport,
+                      importDirectiveContext.context.solParser,
+                      contentImport.url,
+                  )
+                : []),
+        ];
+    } catch (e: any) {
+        return parseFiles(
+            [
+                {
+                    path: importDirectiveContext.element.path,
+                    error: e.toString(),
+                },
+            ],
+            importDirectiveContext.context.solParser,
+        );
+    }
+};
 
 export async function getAllFiles(
     getFolder: (path: string) => Promise<Folder>,
@@ -27,34 +116,11 @@ export async function getAllFiles(
     baseFolderPath: string,
     solParser: Parse,
 ): Promise<ParsedSolFile[]> {
-    const resolveFolder: any = async (
-        folder: Folder,
-    ): Promise<RawSolFile[]> => {
-        const isSolidityFile = (path: string): boolean =>
-            folder[path].isDirectory ||
-            path.split('.').pop() === SOL_FILE_EXTENSION;
-
-        const resolveDirEntry = async (path: string): Promise<RawSolFile[]> =>
-            folder[path].isDirectory
-                ? await resolveFolder(await getFolder(path))
-                : [
-                      {
-                          path: Path.resolve(path),
-                          content: await getFile(path),
-                      },
-                  ];
-
-        return R.pipe(
-            R.filter(isSolidityFile) as (a: string[]) => string[],
-            R.map(resolveDirEntry),
-            (p) => Promise.all(p),
-            R.andThen(R.unnest),
-            R.andThen(R.uniqWith(isDuplicateFile)),
-        )(Object.keys(folder));
-    };
-
     const localFiles = parseFiles(
-        await resolveFolder(await getFolder(baseFolderPath)),
+        await resolveFolder({
+            context: { getFolder, getFile },
+            element: await getFolder(baseFolderPath),
+        }),
         solParser,
     );
 
@@ -108,51 +174,16 @@ async function retrieveExternalContent(
               }
             : { ...importDirective };
 
-    const execImport = async (
-        importDirective: ImportDirective,
-    ): Promise<ParsedSolFile[]> => {
-        try {
-            const contentImport = await resolveImport(importDirective.path);
-
-            const parsedFiles = parseFiles(
-                [
-                    {
-                        path: importDirective.path,
-                        content: contentImport.content,
-                        type: contentImport.type,
-                    },
-                ],
-                solParser,
-            );
-
-            return [
-                ...parsedFiles,
-                ...(parsedFiles[0].parsedContent
-                    ? await retrieveExternalContent(
-                          parsedFiles[0].parsedContent?.children,
-                          resolveImport,
-                          solParser,
-                          contentImport.url,
-                      )
-                    : []),
-            ];
-        } catch (e: any) {
-            return parseFiles(
-                [
-                    {
-                        path: importDirective.path,
-                        error: e.toString(),
-                    },
-                ],
-                solParser,
-            );
-        }
-    };
+    const addContextToImportDirective = (importDirective: ImportDirective) => ({
+        context: { resolveImport, solParser },
+        element: importDirective,
+    });
 
     return R.pipe(
         getImports,
         R.map(resolveImportPathToAbsoluteUrl),
         R.filter(isExternalFile),
+        R.map(addContextToImportDirective),
         R.map(execImport),
         (a) => Promise.all(a),
         R.andThen(R.unnest),

@@ -1,4 +1,3 @@
-import { ParsedSolFile } from '../lib/ParseSolidity';
 import { GraphStyle } from './GraphStyle';
 import { ThreeGraphNode } from './NodePosition';
 import { RenderedNodes } from './ThreeEnv';
@@ -105,7 +104,6 @@ export function expendNode<T>(
         const style = renderedNodes.graphStyle;
 
         if (selectedNode.objectCSS && selectedNode.initialPosition) {
-            //centerNode(selectedNode, camera, controls);
             selectedNode.objectCSS.position.y =
                 selectedNode.initialPosition.y - style.EXPAND_HEIGHT / 2;
         }

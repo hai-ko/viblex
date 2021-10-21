@@ -15,9 +15,9 @@ import {
 import ReactDOM from 'react-dom';
 import { centerNode, expendNode } from './NodeSelection';
 import { ContractDefinition } from '@solidity-parser/parser/dist/src/ast-types';
-import { Context } from '../lib/ContractHandling';
 import ContractNode from './ContractNode';
 import ContractView from './ContractView';
+import { Context } from '../lib/Graph';
 
 interface GraphProps {
     view: string;
