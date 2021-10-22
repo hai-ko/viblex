@@ -1,4 +1,4 @@
-import { DAG, GraphNode } from '../graph/NodePosition';
+import { DAG, GraphNode } from '../graph/utils/NodePosition';
 import { getContracts, ParsedSolFile } from './ParseSolidity';
 import * as R from 'ramda';
 import {

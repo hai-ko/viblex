@@ -1,5 +1,5 @@
 import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer';
-import { Edge } from '../lib/Graph';
+import { Edge } from '../../lib/Graph';
 import { GraphStyle } from './GraphStyle';
 import { ThreeGraphNode } from './NodePosition';
 

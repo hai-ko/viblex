@@ -1,12 +1,12 @@
 import './Graph.css';
 
 import React, { useEffect, useState } from 'react';
-import { ParsedSolFile } from '../lib/ParseSolidity';
-import { DAG, getContractsDAG, getFilesDAG } from './NodePosition';
+import { ParsedSolFile } from '../../lib/ParseSolidity';
+import { DAG, getContractsDAG, getFilesDAG } from '../utils/NodePosition';
 import { ContractDefinition } from '@solidity-parser/parser/dist/src/ast-types';
 import ContractGraph from './ContractGraph';
 import FileGraph from './FileGraph';
-import { Context } from '../lib/Graph';
+import { Context } from '../../lib/Graph';
 
 interface GraphContainerProps {
     files: ParsedSolFile[];

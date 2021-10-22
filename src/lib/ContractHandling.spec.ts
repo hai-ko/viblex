@@ -5,13 +5,13 @@ import {
     ContractDefinition,
 } from '@solidity-parser/parser/dist/src/ast-types';
 import {
-    Context,
     createInheritanceEdges,
     getAllContracts,
     getContractId,
     getRootContracts,
 } from './ContractHandling';
-import { getContractsDAG, getFilesDAG } from '../graph/NodePosition';
+import { getContractsDAG, getFilesDAG } from '../graph/utils/NodePosition';
+import { Context } from './Graph';
 
 describe('ContractHandling', () => {
     const rawFiles = [

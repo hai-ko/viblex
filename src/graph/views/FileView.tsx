@@ -1,10 +1,10 @@
 import './Graph.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
-import { getPragmas, ParsedSolFile } from '../lib/ParseSolidity';
-import { getFileDisplayName } from '../lib/FileHandling';
-import { GraphStyle } from './GraphStyle';
+import { getPragmas, ParsedSolFile } from '../../lib/ParseSolidity';
+import { getFileDisplayName } from '../../lib/FileHandling';
+import { GraphStyle } from './../utils/GraphStyle';
 import Icon from './Icon';
-import { GraphNode } from './NodePosition';
+import { GraphNode } from './../utils/NodePosition';
 import ViewEntry from './ViewEntry';
 
 interface FileViewProps {

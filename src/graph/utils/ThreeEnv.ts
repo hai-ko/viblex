@@ -1,4 +1,4 @@
-import { Camera, PerspectiveCamera, Vector3 } from 'three';
+import { PerspectiveCamera } from 'three';
 import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls';
 import {
     CSS3DObject,
@@ -10,9 +10,9 @@ import { DAG, ThreeGraphNode } from './NodePosition';
 import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
 import { showImportPaths } from './EdgeSegments';
 import { DefaultGraphStyle, GraphStyle } from './GraphStyle';
-import { createNodes, PortalParts } from './Node';
+import { createNodes, PortalParts } from './../views/Node';
 import React from 'react';
-import { GraphViewState } from './ContractGraph';
+import { GraphViewState } from './../views/ContractGraph';
 
 export interface Three {
     camera: PerspectiveCamera;

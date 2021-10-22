@@ -1,19 +1,19 @@
-import { ParsedSolFile } from '../lib/ParseSolidity';
+import { ParsedSolFile } from '../../lib/ParseSolidity';
 import * as R from 'ramda';
-import { buildInputGraph, getImportRootFiles } from '../lib/FileHandling';
+import { buildInputGraph, getImportRootFiles } from '../../lib/FileHandling';
 import {
     getIncomingEdges,
     Edge,
     getOutgoingEdges,
     Context,
-} from '../lib/Graph';
+} from '../../lib/Graph';
 import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer';
 import {
     createInheritanceEdges,
     getAllContracts,
     getContractId,
     getRootContracts,
-} from '../lib/ContractHandling';
+} from '../../lib/ContractHandling';
 import { ContractDefinition } from '@solidity-parser/parser/dist/src/ast-types';
 import { createCluster } from './NodePositionOptimizer';
 

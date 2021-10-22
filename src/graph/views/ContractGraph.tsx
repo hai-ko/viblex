@@ -1,8 +1,8 @@
 import './Graph.css';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { ParsedSolFile } from '../lib/ParseSolidity';
-import { DAG } from './NodePosition';
+import { ParsedSolFile } from '../../lib/ParseSolidity';
+import { DAG } from './../utils/NodePosition';
 import Menu from './Menu';
 import {
     animate,
@@ -11,13 +11,13 @@ import {
     onWindowResize,
     RenderedNodes,
     Three,
-} from './ThreeEnv';
+} from './../utils/ThreeEnv';
 import ReactDOM from 'react-dom';
-import { centerNode, expendNode } from './NodeSelection';
+import { centerNode, expendNode } from './../utils/NodeSelection';
 import { ContractDefinition } from '@solidity-parser/parser/dist/src/ast-types';
 import ContractNode from './ContractNode';
 import ContractView from './ContractView';
-import { Context } from '../lib/Graph';
+import { Context } from '../../lib/Graph';
 
 interface GraphProps {
     view: string;

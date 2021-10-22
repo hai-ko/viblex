@@ -9,7 +9,7 @@ import { IRemixApi } from '@remixproject/plugin-api';
 import { ParsedSolFile } from './lib/ParseSolidity';
 import { useRef } from 'react';
 import { getAllRemixFiles } from './remix-utils/RemixFileHandler';
-import GraphContainer from './graph/GraphContainer';
+import GraphContainer from './graph/views/GraphContainer';
 
 function App() {
     const [client, setClient] = useState<

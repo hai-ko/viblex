@@ -1,4 +1,4 @@
-import { Edge } from '../lib/Graph';
+import { Edge } from '../../lib/Graph';
 import * as R from 'ramda';
 
 function walkUp(startNodeId: string, edges: Edge[]): string[] {

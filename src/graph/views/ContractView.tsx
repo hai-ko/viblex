@@ -1,12 +1,12 @@
 import './Graph.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
-import { ParsedSolFile } from '../lib/ParseSolidity';
-import { GraphStyle } from './GraphStyle';
+import { ParsedSolFile } from '../../lib/ParseSolidity';
+import { GraphStyle } from './../utils/GraphStyle';
 import Icon from './Icon';
 
 import { ContractDefinition } from '@solidity-parser/parser/dist/src/ast-types';
-import { ThreeGraphNode } from './NodePosition';
-import { Context } from '../lib/Graph';
+import { ThreeGraphNode } from './../utils/NodePosition';
+import { Context } from '../../lib/Graph';
 
 interface ContractViewProps {
     node: ThreeGraphNode<Context<ParsedSolFile, ContractDefinition>>;
