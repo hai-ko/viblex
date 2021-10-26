@@ -10,3 +10,5 @@ Features:
 * Transaction View 🏗️
 * Block View 🏗️
 * Interaction Module 🏗️
+
+**Viblex hasn't been released yet. It will be relasead as [remix plugin](https://remix-project.org/) and standalone web app.**
