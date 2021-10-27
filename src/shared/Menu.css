@@ -1,0 +1,37 @@
+
+
+.menu-btn-space {
+    margin-left: 2rem !important;
+}
+
+
+.menu-btn {
+    color: rgba(255, 174, 52, 0.9);
+    background: rgba(255, 174, 52, 0.1);
+    outline: 1px solid rgba(255, 174, 52, 0.5);
+    border: 0px;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 0px !important;
+    margin-left: 10px;
+}
+
+
+.menu-btn:hover{
+    color: rgba(255, 174, 52, 1);
+    background: rgba(255, 174, 52, 0.3);
+  
+}
+
+.menu-btn:focus,
+.menu-btn.focus {
+    box-shadow: 0 0 0 .2rem rgba(255, 174, 52, 1)
+}
+
+.menu {
+    position: absolute;
+    z-index: 999;
+    bottom: 10px;
+    
+    text-align: left;
+}

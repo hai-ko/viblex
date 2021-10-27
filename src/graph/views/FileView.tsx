@@ -3,7 +3,7 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import { getPragmas, ParsedSolFile } from '../../lib/ParseSolidity';
 import { getFileDisplayName } from '../../lib/FileHandling';
 import { GraphStyle } from './../utils/GraphStyle';
-import Icon from './Icon';
+import Icon from '../../shared/Icon';
 import { GraphNode } from './../utils/NodePosition';
 import ViewEntry from './ViewEntry';
 

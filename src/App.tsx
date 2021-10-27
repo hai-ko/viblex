@@ -10,6 +10,7 @@ import { ParsedSolFile } from './lib/ParseSolidity';
 import { useRef } from 'react';
 import { getAllRemixFiles } from './remix-utils/RemixFileHandler';
 import GraphContainer from './graph/views/GraphContainer';
+import BlockView from './block/BlockView';
 
 function App() {
     const [client, setClient] = useState<
@@ -19,6 +20,7 @@ function App() {
     >();
 
     const [files, setFiles] = useState<ParsedSolFile[]>();
+    const [view, setView] = useState<string>('files');
 
     useEffect(() => {
         if (!client) {
@@ -41,8 +43,17 @@ function App() {
 
     return (
         <div className="App h-100 w-100" ref={graphContainer}>
-            {graphContainer.current && files && (
-                <GraphContainer files={files} />
+            {view === 'block' ? (
+                <BlockView view={view} setView={setView} />
+            ) : (
+                graphContainer.current &&
+                files && (
+                    <GraphContainer
+                        files={files}
+                        view={view}
+                        setView={setView}
+                    />
+                )
             )}
         </div>
     );

@@ -10,10 +10,11 @@ import { Context } from '../../lib/Graph';
 
 interface GraphContainerProps {
     files: ParsedSolFile[];
+    setView: (view: string) => void;
+    view: string;
 }
 
 function GraphContainer(props: GraphContainerProps) {
-    const [view, setView] = useState<string>('files');
     const [filesDag, setFilesDag] = useState<DAG<ParsedSolFile> | undefined>();
     const [contractsDag, setContractsDag] = useState<
         DAG<Context<ParsedSolFile, ContractDefinition>> | undefined
@@ -43,15 +44,19 @@ function GraphContainer(props: GraphContainerProps) {
 
     return (
         <>
-            {view === 'contracts' && contractsDag && (
+            {props.view === 'contracts' && contractsDag && (
                 <ContractGraph
                     contractsDag={contractsDag}
-                    setView={setView}
-                    view={view}
+                    setView={props.setView}
+                    view={props.view}
                 />
             )}
-            {view === 'files' && filesDag && (
-                <FileGraph filesDAG={filesDag} setView={setView} view={view} />
+            {props.view === 'files' && filesDag && (
+                <FileGraph
+                    filesDAG={filesDag}
+                    setView={props.setView}
+                    view={props.view}
+                />
             )}
         </>
     );

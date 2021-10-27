@@ -1,4 +1,4 @@
-import './Graph.css';
+import './Menu.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import Icon from './Icon';
 import ViewSelect from './ViewSelect';

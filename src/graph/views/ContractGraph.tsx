@@ -3,7 +3,7 @@ import './Graph.css';
 import React, { useEffect, useRef, useState } from 'react';
 import { ParsedSolFile } from '../../lib/ParseSolidity';
 import { DAG } from './../utils/NodePosition';
-import Menu from './Menu';
+import Menu from '../../shared/Menu';
 import {
     animate,
     autoFit,
