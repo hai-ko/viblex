@@ -14,6 +14,19 @@ interface ContractViewProps {
     exitMaxNode: () => void;
 }
 
+export function getIcon(kind: string): JSX.Element {
+    switch (kind) {
+        case 'interface':
+            return <Icon iconClass="fas fa-file-export" />;
+        case 'library':
+            return <Icon iconClass="fas fa-book" />;
+        case 'abstract':
+        case 'contract':
+        default:
+            return <Icon iconClass="fas fa-file-contract" />;
+    }
+}
+
 function ContractView(props: ContractViewProps) {
     return props.node.element ? (
         <div
@@ -43,7 +56,8 @@ function ContractView(props: ContractViewProps) {
                 <div className="row kind-info">
                     <div className="col-12">
                         <span className="badge bg-light text-dark">
-                            {props.node.element.element.kind}
+                            &nbsp;{getIcon(props.node.element.element.kind)}
+                            &nbsp;&nbsp;{props.node.element.element.kind}&nbsp;
                         </span>
                     </div>
                 </div>

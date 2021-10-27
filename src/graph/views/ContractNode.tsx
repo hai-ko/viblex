@@ -1,13 +1,13 @@
 import './Graph.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { ParsedSolFile } from '../../lib/ParseSolidity';
-import { getFileDisplayName } from '../../lib/FileHandling';
 import { GraphStyle } from './../utils/GraphStyle';
-import Icon from './Icon';
 import { GraphNode } from './../utils/NodePosition';
 import { GraphViewState } from './ContractGraph';
 import { ContractDefinition } from '@solidity-parser/parser/dist/src/ast-types';
 import { Context } from '../../lib/Graph';
+import { getIcon } from './ContractView';
+import { getFileDisplayName } from '../../lib/FileHandling';
 
 interface FileNodeProps {
     node: GraphNode<Context<ParsedSolFile, ContractDefinition>>;
@@ -19,19 +19,6 @@ interface FileNodeProps {
     nodeToMax?: string;
     setSelectedNode?: (nodeId: string | undefined) => void;
     setNodeToMax?: (nodeId: string | undefined) => void;
-}
-
-function getIcon(kind: string): JSX.Element {
-    switch (kind) {
-        case 'interface':
-            return <Icon iconClass="fas fa-file-export" />;
-        case 'library':
-            return <Icon iconClass="fas fa-book" />;
-        case 'abstract':
-        case 'contract':
-        default:
-            return <Icon iconClass="fas fa-file-contract" />;
-    }
 }
 
 function ContractNode(props: FileNodeProps) {
@@ -95,8 +82,6 @@ function ContractNode(props: FileNodeProps) {
         >
             <div className="row">
                 <div className="col file-title text-left">
-                    {getIcon(props.node.element.element.kind)}
-                    &nbsp;&nbsp;
                     {getFileDisplayName(props.node.element.element.name)}
                 </div>
             </div>
@@ -104,7 +89,8 @@ function ContractNode(props: FileNodeProps) {
                 <div className="row kind-info">
                     <div className="col-12">
                         <span className="badge bg-light text-dark">
-                            {props.node.element.element.kind}
+                            &nbsp;{getIcon(props.node.element.element.kind)}
+                            &nbsp;&nbsp;{props.node.element.element.kind}&nbsp;
                         </span>
                     </div>
                 </div>

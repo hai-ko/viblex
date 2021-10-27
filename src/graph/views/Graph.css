@@ -180,3 +180,7 @@
 .view-select.focus {
     box-shadow: 0 0 0 .2rem rgba(255, 174, 52, 1)
 }
+
+.error {
+    color: rgb(255, 72, 72) !important;
+}

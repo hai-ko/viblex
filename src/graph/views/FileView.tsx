@@ -13,8 +13,34 @@ interface FileViewProps {
     exitMaxNode: () => void;
 }
 
+export function getIcon(element: ParsedSolFile | undefined): JSX.Element {
+    if (element?.error) {
+        return <Icon iconClass="fas fa-exclamation-circle error" />;
+    }
+
+    if (element) {
+        switch (element.type) {
+            case 'http':
+            case 'https':
+            case 'ipfs':
+            case 'swarm':
+                return <Icon iconClass="far fa-file-alt" />;
+
+            case 'github':
+                return <Icon iconClass="fab fa-gitpub" />;
+
+            default:
+                return <Icon iconClass="fas fa-file-alt" />;
+        }
+    } else {
+        return <Icon iconClass="fas fa-file-alt" />;
+    }
+}
+
 function FileView(props: FileViewProps) {
     let version: string | undefined;
+
+    const icon = getIcon(props.node.element);
 
     if (props.node.element?.parsedContent) {
         const solVersionPragma = getPragmas(
@@ -26,11 +52,7 @@ function FileView(props: FileViewProps) {
     return props.node.element ? (
         <div
             className={`file-view h-100 ${
-                props.node.element?.error
-                    ? 'error-node'
-                    : props.node.element?.type
-                    ? 'external-node'
-                    : 'local-node'
+                props.node.element?.type ? 'external-node' : 'local-node'
             } file`}
         >
             <div className="row">
@@ -47,12 +69,18 @@ function FileView(props: FileViewProps) {
             <div className="container view-container">
                 <div className="row ">
                     <div className="col title text-center">
-                        {getFileDisplayName(props.node.element.path)}
+                        {getFileDisplayName(props.node.element.path)}.sol
                     </div>
                 </div>
-                <div className="row ">
+                <div className="row kind-info">
                     <div className="col-12 text-center ">
-                        <span className="badge  bg-dark">&nbsp;File&nbsp;</span>
+                        <span
+                            className={`badge bg-light text-dark${
+                                props.node.element.error ? ' error' : ''
+                            }`}
+                        >
+                            &nbsp;{icon}&nbsp;&nbsp;File&nbsp;
+                        </span>
                     </div>
                 </div>
                 <div className="row ">

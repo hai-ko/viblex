@@ -19,33 +19,7 @@ interface FileNodeProps {
     setNodeToMax?: (nodeId: string | undefined) => void;
 }
 
-export function getIcon(element: ParsedSolFile | undefined): JSX.Element {
-    if (element?.error) {
-        return <Icon iconClass="fas fa-exclamation-circle" />;
-    }
-
-    if (element) {
-        switch (element.type) {
-            case 'http':
-            case 'https':
-            case 'ipfs':
-            case 'swarm':
-                return <Icon iconClass="far fa-file-alt" />;
-
-            case 'github':
-                return <Icon iconClass="fab fa-gitpub" />;
-
-            default:
-                return <Icon iconClass="fas fa-file-alt" />;
-        }
-    } else {
-        return <Icon iconClass="fas fa-file-alt" />;
-    }
-}
-
 function FileNode(props: FileNodeProps) {
-    const icon = getIcon(props.node.element);
-
     let version: string | undefined;
 
     if (props.node.element?.parsedContent) {
@@ -77,11 +51,7 @@ function FileNode(props: FileNodeProps) {
     return props.node.element ? (
         <div
             className={`node ${
-                props.node.element?.error
-                    ? 'error-node'
-                    : props.node.element?.type
-                    ? 'external-node'
-                    : 'local-node'
+                props.node.element?.type ? 'external-node' : 'local-node'
             } file`}
             style={nodeDivStyle}
             onMouseDown={() => {
@@ -117,8 +87,14 @@ function FileNode(props: FileNodeProps) {
         >
             <div className="row">
                 <div className="col file-title text-left">
-                    {icon}&nbsp;&nbsp;
-                    {getFileDisplayName(props.node.element.path)}
+                    {props.node.element?.error && (
+                        <>
+                            &nbsp;&nbsp;
+                            <Icon iconClass="fas fa-exclamation-circle error" />
+                            &nbsp;&nbsp;
+                        </>
+                    )}
+                    {getFileDisplayName(props.node.element.path)}.sol
                 </div>
             </div>
             {version && isNodeSelected && (
