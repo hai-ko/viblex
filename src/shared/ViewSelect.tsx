@@ -1,5 +1,5 @@
-import './Graph.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import './ViewSelect.css';
 
 interface ViewSelectProps {
     setView: (viewName: string) => void;
@@ -15,6 +15,7 @@ function ViewSelect(props: ViewSelectProps) {
         >
             <option value="files">Files</option>
             <option value="contracts">Contracts</option>
+            <option value="block">Block</option>
         </select>
     );
 }

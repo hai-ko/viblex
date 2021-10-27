@@ -2,7 +2,7 @@ import './Graph.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { ParsedSolFile } from '../../lib/ParseSolidity';
 import { GraphStyle } from './../utils/GraphStyle';
-import Icon from './Icon';
+import Icon from '../../shared/Icon';
 
 import { ContractDefinition } from '@solidity-parser/parser/dist/src/ast-types';
 import { ThreeGraphNode } from './../utils/NodePosition';

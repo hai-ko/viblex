@@ -1,4 +1,3 @@
-import './Graph.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 interface GraphProps {
