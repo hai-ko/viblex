@@ -1,7 +1,7 @@
 import { PerspectiveCamera } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-
 import * as THREE from 'three';
+import { createBlock } from './Block';
 
 export interface ThreeEnv {
     camera: PerspectiveCamera;
@@ -64,7 +64,7 @@ function createThree(width: number, height: number): ThreeEnv {
             minDistance: 150,
             limitConnections: false,
             maxConnections: 20,
-            particleCount: 500,
+            particleCount: 300,
         },
     };
 }
@@ -87,7 +87,7 @@ function render(threeEnv: ThreeEnv) {
     if (threeEnv) {
         const time = Date.now() * 0.001;
 
-        threeEnv.ethNodesGroup.rotation.y = time * 0.1;
+        threeEnv.ethNodesGroup.rotation.y = time * 0.01;
         threeEnv.renderer.render(threeEnv.scene, threeEnv.camera);
     }
 }
@@ -211,7 +211,7 @@ export function init(
     const rHalf = r / 2;
 
     const particlesData: ParticlesData[] = [];
-    const maxNodeParticleCount = 1000;
+    const maxNodeParticleCount = 500;
 
     const segments = maxNodeParticleCount * maxNodeParticleCount;
     const positions = new Float32Array(segments * 3);
@@ -296,6 +296,7 @@ export function init(
 
         false,
     );
+    createBlock(threeEnv);
 
     setThree(threeEnv);
 
