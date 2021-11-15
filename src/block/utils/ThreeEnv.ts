@@ -1,29 +1,42 @@
-import { PerspectiveCamera } from 'three';
+import { PerspectiveCamera, Scene } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+
 import * as THREE from 'three';
-import { createBlock } from './Block';
+import { createFramgeSegments } from './Block';
+// @ts-ignore
+import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
 
 export interface ThreeEnv {
     camera: PerspectiveCamera;
     renderer: THREE.WebGLRenderer;
     scene: THREE.Scene;
-    ethNodesGroup: THREE.Group;
     controls: OrbitControls;
-    settings: {
-        showDots: boolean;
-        showLines: boolean;
-        minDistance: number;
-        limitConnections: boolean;
-        maxConnections: number;
-        particleCount: number;
-    };
+    blockchainGroup: THREE.Group;
+    cloudGroups: THREE.Group[];
 }
 
 interface ParticlesData {
     velocity: THREE.Vector3;
     numConnections: number;
 }
-interface EthNodesData {
+
+interface CloudSettings {
+    r: number;
+    rHalfY: number;
+    position: THREE.Vector3;
+    showDots: boolean;
+    showLines: boolean;
+    minDistance: number;
+    limitConnections: boolean;
+    maxConnections: number;
+    particleCount: number;
+    dotSize: number;
+    pointColor: string;
+    transparent: boolean;
+    sizeAttenuation: boolean;
+}
+
+interface CloudData {
     nodesParticlePositions: Float32Array;
     colors: Float32Array;
     positions: Float32Array;
@@ -31,11 +44,13 @@ interface EthNodesData {
     pointCloud: THREE.Points;
     r: number;
     rHalf: number;
+    rHalfY: number;
     linesMesh: THREE.LineSegments;
+    settings: CloudSettings;
 }
 
 function createThree(width: number, height: number): ThreeEnv {
-    const camera = new THREE.PerspectiveCamera(45, width / height, 1, 10000);
+    const camera = new THREE.PerspectiveCamera(45, width / height, 1, 100000);
     camera.position.z = 2000;
 
     const scene = new THREE.Scene();
@@ -47,25 +62,20 @@ function createThree(width: number, height: number): ThreeEnv {
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.minDistance = 1000;
-    controls.maxDistance = 5000;
+    controls.maxDistance = 9000;
 
     const ethNodesGroup = new THREE.Group();
+    const blockchainGroup = new THREE.Group();
     scene.add(ethNodesGroup);
+    scene.add(blockchainGroup);
 
     return {
         camera,
         renderer,
         scene,
-        ethNodesGroup,
         controls,
-        settings: {
-            showDots: true,
-            showLines: true,
-            minDistance: 150,
-            limitConnections: false,
-            maxConnections: 20,
-            particleCount: 300,
-        },
+        cloudGroups: [],
+        blockchainGroup,
     };
 }
 
@@ -86,129 +96,140 @@ export function onWindowResize(
 function render(threeEnv: ThreeEnv) {
     if (threeEnv) {
         const time = Date.now() * 0.001;
+        threeEnv.cloudGroups.forEach(
+            (group) => (group.rotation.y = time * 0.01),
+        );
 
-        threeEnv.ethNodesGroup.rotation.y = time * 0.01;
         threeEnv.renderer.render(threeEnv.scene, threeEnv.camera);
     }
 }
 
-export function animate(threeEnv: ThreeEnv, nodeData: EthNodesData) {
-    if (nodeData) {
-        let vertexpos = 0;
-        let colorpos = 0;
-        let numConnected = 0;
+function animateCloud(threeEnv: ThreeEnv, nodeData: CloudData) {
+    let vertexpos = 0;
+    let colorpos = 0;
+    let numConnected = 0;
 
-        for (let i = 0; i < threeEnv.settings.particleCount; i++)
-            nodeData.particlesData[i].numConnections = 0;
+    for (let i = 0; i < nodeData.settings.particleCount; i++)
+        nodeData.particlesData[i].numConnections = 0;
 
-        for (let i = 0; i < threeEnv.settings.particleCount; i++) {
-            // get the particle
-            const particleData = nodeData.particlesData[i];
+    for (let i = 0; i < nodeData.settings.particleCount; i++) {
+        // get the particle
+        const particleData = nodeData.particlesData[i];
 
-            nodeData.nodesParticlePositions[i * 3] += particleData.velocity.x;
-            nodeData.nodesParticlePositions[i * 3 + 1] +=
-                particleData.velocity.y;
-            nodeData.nodesParticlePositions[i * 3 + 2] +=
-                particleData.velocity.z;
+        nodeData.nodesParticlePositions[i * 3] += particleData.velocity.x;
+        nodeData.nodesParticlePositions[i * 3 + 1] += particleData.velocity.y;
+        nodeData.nodesParticlePositions[i * 3 + 2] += particleData.velocity.z;
 
+        if (
+            nodeData.nodesParticlePositions[i * 3 + 1] < -nodeData.rHalfY ||
+            nodeData.nodesParticlePositions[i * 3 + 1] > nodeData.rHalfY
+        )
+            particleData.velocity.y = -particleData.velocity.y;
+
+        if (
+            nodeData.nodesParticlePositions[i * 3] < -nodeData.rHalf ||
+            nodeData.nodesParticlePositions[i * 3] > nodeData.rHalf
+        )
+            particleData.velocity.x = -particleData.velocity.x;
+
+        if (
+            nodeData.nodesParticlePositions[i * 3 + 2] < -nodeData.rHalf ||
+            nodeData.nodesParticlePositions[i * 3 + 2] > nodeData.rHalf
+        )
+            particleData.velocity.z = -particleData.velocity.z;
+
+        if (
+            nodeData.settings.limitConnections &&
+            particleData.numConnections >= nodeData.settings.maxConnections
+        )
+            continue;
+
+        // Check collision
+        for (let j = i + 1; j < nodeData.settings.particleCount; j++) {
+            const particleDataB = nodeData.particlesData[j];
             if (
-                nodeData.nodesParticlePositions[i * 3 + 1] < -nodeData.rHalf ||
-                nodeData.nodesParticlePositions[i * 3 + 1] > nodeData.rHalf
-            )
-                particleData.velocity.y = -particleData.velocity.y;
-
-            if (
-                nodeData.nodesParticlePositions[i * 3] < -nodeData.rHalf ||
-                nodeData.nodesParticlePositions[i * 3] > nodeData.rHalf
-            )
-                particleData.velocity.x = -particleData.velocity.x;
-
-            if (
-                nodeData.nodesParticlePositions[i * 3 + 2] < -nodeData.rHalf ||
-                nodeData.nodesParticlePositions[i * 3 + 2] > nodeData.rHalf
-            )
-                particleData.velocity.z = -particleData.velocity.z;
-
-            if (
-                threeEnv.settings.limitConnections &&
-                particleData.numConnections >= threeEnv.settings.maxConnections
+                nodeData.settings.limitConnections &&
+                particleDataB.numConnections >= nodeData.settings.maxConnections
             )
                 continue;
 
-            // Check collision
-            for (let j = i + 1; j < threeEnv.settings.particleCount; j++) {
-                const particleDataB = nodeData.particlesData[j];
-                if (
-                    threeEnv.settings.limitConnections &&
-                    particleDataB.numConnections >=
-                        threeEnv.settings.maxConnections
-                )
-                    continue;
+            const dx =
+                nodeData.nodesParticlePositions[i * 3] -
+                nodeData.nodesParticlePositions[j * 3];
+            const dy =
+                nodeData.nodesParticlePositions[i * 3 + 1] -
+                nodeData.nodesParticlePositions[j * 3 + 1];
+            const dz =
+                nodeData.nodesParticlePositions[i * 3 + 2] -
+                nodeData.nodesParticlePositions[j * 3 + 2];
+            const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
-                const dx =
-                    nodeData.nodesParticlePositions[i * 3] -
+            if (dist < nodeData.settings.minDistance) {
+                particleData.numConnections++;
+                particleDataB.numConnections++;
+
+                const alpha = 1.0 - dist / nodeData.settings.minDistance;
+
+                nodeData.positions[vertexpos++] =
+                    nodeData.nodesParticlePositions[i * 3];
+                nodeData.positions[vertexpos++] =
+                    nodeData.nodesParticlePositions[i * 3 + 1];
+                nodeData.positions[vertexpos++] =
+                    nodeData.nodesParticlePositions[i * 3 + 2];
+                nodeData.positions[vertexpos++] =
                     nodeData.nodesParticlePositions[j * 3];
-                const dy =
-                    nodeData.nodesParticlePositions[i * 3 + 1] -
+                nodeData.positions[vertexpos++] =
                     nodeData.nodesParticlePositions[j * 3 + 1];
-                const dz =
-                    nodeData.nodesParticlePositions[i * 3 + 2] -
+                nodeData.positions[vertexpos++] =
                     nodeData.nodesParticlePositions[j * 3 + 2];
-                const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
-                if (dist < threeEnv.settings.minDistance) {
-                    particleData.numConnections++;
-                    particleDataB.numConnections++;
+                nodeData.colors[colorpos++] = alpha;
+                nodeData.colors[colorpos++] = alpha;
+                nodeData.colors[colorpos++] = alpha;
 
-                    const alpha = 1.0 - dist / threeEnv.settings.minDistance;
+                nodeData.colors[colorpos++] = alpha;
+                nodeData.colors[colorpos++] = alpha;
+                nodeData.colors[colorpos++] = alpha;
 
-                    nodeData.positions[vertexpos++] =
-                        nodeData.nodesParticlePositions[i * 3];
-                    nodeData.positions[vertexpos++] =
-                        nodeData.nodesParticlePositions[i * 3 + 1];
-                    nodeData.positions[vertexpos++] =
-                        nodeData.nodesParticlePositions[i * 3 + 2];
-                    nodeData.positions[vertexpos++] =
-                        nodeData.nodesParticlePositions[j * 3];
-                    nodeData.positions[vertexpos++] =
-                        nodeData.nodesParticlePositions[j * 3 + 1];
-                    nodeData.positions[vertexpos++] =
-                        nodeData.nodesParticlePositions[j * 3 + 2];
-
-                    nodeData.colors[colorpos++] = alpha;
-                    nodeData.colors[colorpos++] = alpha;
-                    nodeData.colors[colorpos++] = alpha;
-
-                    nodeData.colors[colorpos++] = alpha;
-                    nodeData.colors[colorpos++] = alpha;
-                    nodeData.colors[colorpos++] = alpha;
-
-                    numConnected++;
-                }
+                numConnected++;
             }
         }
-
-        nodeData.linesMesh.geometry.setDrawRange(0, numConnected * 2);
-        nodeData.linesMesh.geometry.attributes.position.needsUpdate = true;
-        nodeData.linesMesh.geometry.attributes.color.needsUpdate = true;
-
-        nodeData.pointCloud.geometry.attributes.position.needsUpdate = true;
-
-        requestAnimationFrame(() => animate(threeEnv, nodeData));
-
-        render(threeEnv);
     }
+
+    nodeData.linesMesh.geometry.setDrawRange(0, numConnected * 2);
+    nodeData.linesMesh.geometry.attributes.position.needsUpdate = true;
+    nodeData.linesMesh.geometry.attributes.color.needsUpdate = true;
+
+    nodeData.pointCloud.geometry.attributes.position.needsUpdate = true;
 }
 
-export function init(
-    setThree: React.Dispatch<React.SetStateAction<ThreeEnv | undefined>>,
-    threeContainer: React.RefObject<HTMLDivElement>,
+export function animate(
+    threeEnv: ThreeEnv,
+    nodeData: CloudData,
+    txData: CloudData,
 ) {
-    const height = (threeContainer.current as any).clientHeight;
-    const width = (threeContainer.current as any).clientWidth;
-    const threeEnv = createThree(height, width);
-    const r = 800;
+    TWEEN.update();
+
+    if (nodeData) {
+        animateCloud(threeEnv, nodeData);
+    }
+
+    if (txData) {
+        animateCloud(threeEnv, txData);
+    }
+
+    requestAnimationFrame(() => animate(threeEnv, nodeData, txData));
+
+    render(threeEnv);
+}
+
+function createCloud(
+    group: THREE.Group,
+    cloudSettings: CloudSettings,
+): CloudData {
+    const r = cloudSettings.r;
     const rHalf = r / 2;
+    const rHalfY = r / cloudSettings.rHalfY;
 
     const particlesData: ParticlesData[] = [];
     const maxNodeParticleCount = 500;
@@ -218,11 +239,11 @@ export function init(
     const colors = new Float32Array(segments * 3);
 
     const particleMaterial = new THREE.PointsMaterial({
-        color: 0xffffff,
-        size: 3,
-        blending: THREE.AdditiveBlending,
-        transparent: true,
-        sizeAttenuation: false,
+        color: cloudSettings.pointColor,
+        size: cloudSettings.dotSize,
+        //blending: THREE.AdditiveBlending,
+        transparent: cloudSettings.transparent,
+        sizeAttenuation: cloudSettings.sizeAttenuation,
     });
 
     const nodeParticles = new THREE.BufferGeometry();
@@ -230,7 +251,7 @@ export function init(
 
     for (let i = 0; i < maxNodeParticleCount; i++) {
         const x = Math.random() * r - r / 2;
-        const y = Math.random() * r - r / 2;
+        const y = Math.random() * rHalfY * 2 - rHalfY;
         const z = Math.random() * r - r / 2;
 
         nodesParticlePositions[i * 3] = x;
@@ -248,7 +269,7 @@ export function init(
         });
     }
 
-    nodeParticles.setDrawRange(0, threeEnv.settings.particleCount);
+    nodeParticles.setDrawRange(0, cloudSettings.particleCount);
     nodeParticles.setAttribute(
         'position',
         new THREE.BufferAttribute(nodesParticlePositions, 3).setUsage(
@@ -258,7 +279,12 @@ export function init(
 
     // create the particle system
     const pointCloud = new THREE.Points(nodeParticles, particleMaterial);
-    threeEnv.ethNodesGroup.add(pointCloud);
+    group.position.set(
+        cloudSettings.position.x,
+        cloudSettings.position.y,
+        cloudSettings.position.z,
+    );
+    group.add(pointCloud);
 
     const geometry = new THREE.BufferGeometry();
 
@@ -284,9 +310,30 @@ export function init(
     });
 
     const linesMesh = new THREE.LineSegments(geometry, material);
-    threeEnv.ethNodesGroup.add(linesMesh);
+    linesMesh.visible = cloudSettings.showLines;
+    group.add(linesMesh);
 
-    //
+    return {
+        r,
+        rHalf,
+        rHalfY,
+        colors,
+        linesMesh,
+        nodesParticlePositions,
+        particlesData,
+        pointCloud,
+        positions,
+        settings: cloudSettings,
+    };
+}
+
+export function init(
+    setThree: React.Dispatch<React.SetStateAction<ThreeEnv | undefined>>,
+    threeContainer: React.RefObject<HTMLDivElement>,
+) {
+    const height = (threeContainer.current as any).clientHeight;
+    const width = (threeContainer.current as any).clientWidth;
+    const threeEnv = createThree(height, width);
 
     (threeContainer.current as any).appendChild(threeEnv.renderer.domElement);
 
@@ -296,18 +343,43 @@ export function init(
 
         false,
     );
-    createBlock(threeEnv);
 
+    const nodeCloud = new THREE.Group();
+    const txCloud = new THREE.Group();
+    threeEnv.scene.add(nodeCloud);
+    threeEnv.scene.add(txCloud);
+    animate(
+        threeEnv,
+        createCloud(nodeCloud, {
+            r: 1000,
+            rHalfY: 6,
+            position: new THREE.Vector3(0, 500, 0),
+            showDots: true,
+            showLines: true,
+            minDistance: 150,
+            limitConnections: false,
+            maxConnections: 20,
+            particleCount: 300,
+            dotSize: 2,
+            pointColor: '#ffffff',
+            transparent: true,
+            sizeAttenuation: false,
+        }),
+        createCloud(txCloud, {
+            r: 600,
+            rHalfY: 2,
+            position: new THREE.Vector3(0, 0, 0),
+            showDots: true,
+            showLines: false,
+            minDistance: 150,
+            limitConnections: false,
+            maxConnections: 0,
+            particleCount: 500,
+            dotSize: 2,
+            pointColor: '#0042ad',
+            transparent: false,
+            sizeAttenuation: false,
+        }),
+    );
     setThree(threeEnv);
-
-    animate(threeEnv, {
-        r,
-        rHalf,
-        colors,
-        linesMesh,
-        nodesParticlePositions,
-        particlesData,
-        pointCloud,
-        positions,
-    });
 }
