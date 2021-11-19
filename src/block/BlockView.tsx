@@ -2,8 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import Menu from '../shared/Menu';
 import { init, onWindowResize, ThreeEnv } from './utils/ThreeEnv';
 import detectEthereumProvider from '@metamask/detect-provider';
-import { ethers, providers } from 'ethers';
+import { ethers } from 'ethers';
 import { createBlocks } from './utils/Block';
+import { onClick } from './utils/Intersection';
 
 interface BlockViewProps {
     view: string;
@@ -26,6 +27,7 @@ async function createConnection(
 }
 
 async function getBlocks(
+    threeEnv: ThreeEnv,
     ethProvider: ethers.providers.Web3Provider,
     loadedBlocks: ethers.providers.Block[][],
     setBlocks: React.Dispatch<React.SetStateAction<ethers.providers.Block[][]>>,
@@ -50,7 +52,10 @@ async function getBlocks(
         setBlocks(newLoadedBlocks);
     }
 
-    setTimeout(() => getBlocks(ethProvider, newLoadedBlocks, setBlocks), 30000);
+    setTimeout(
+        () => getBlocks(threeEnv, ethProvider, newLoadedBlocks, setBlocks),
+        30000,
+    );
 }
 
 function BlockView(props: BlockViewProps) {
@@ -64,10 +69,16 @@ function BlockView(props: BlockViewProps) {
     useEffect(() => {
         if (!ethProvider) {
             createConnection(setEthProvider);
-        } else {
-            getBlocks(ethProvider, blocks, setBlocks);
+        } else if (threeEnv && blocks.length === 0) {
+            getBlocks(threeEnv, ethProvider, blocks, setBlocks);
         }
-    }, [ethProvider]);
+    }, [ethProvider, threeEnv]);
+
+    useEffect(() => {
+        if (blocks.length > 0 && threeEnv) {
+            createBlocks(threeEnv, blocks);
+        }
+    }, [blocks, threeEnv]);
 
     useEffect(() => {
         if (threeContainer && !threeEnv) {
@@ -85,17 +96,17 @@ function BlockView(props: BlockViewProps) {
         }
     }, [threeEnv]);
 
-    useEffect(() => {
-        if (threeEnv && blocks.length > 0) {
-            //createBlocks(three, blocks)
-
-            createBlocks(threeEnv, blocks);
-        }
-    }, [threeEnv, blocks]);
-
     return (
         <>
-            <div ref={threeContainer} className="w-100 h-100 three-container">
+            <div
+                ref={threeContainer}
+                className="w-100 h-100 three-container"
+                onClick={(
+                    event: React.MouseEvent<HTMLDivElement, MouseEvent>,
+                ) => {
+                    if (ethProvider) onClick(threeEnv, event, ethProvider);
+                }}
+            >
                 <Menu
                     zoomIn={() => {}}
                     zoomOut={() => {}}
