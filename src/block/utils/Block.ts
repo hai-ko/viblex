@@ -4,11 +4,15 @@ import { Vector3 } from 'three';
 import { ThreeEnv } from './ThreeEnv';
 // @ts-ignore
 import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
+import { FrameMaterial, TextMaterial } from './Materials';
+import { CubeGeometry, CUBE_LENGTH } from './Geometries';
 
 const CHAIN_START_X_SHIFT = -800;
 const INITIAL_BLOCK_PART_SCALE = 0.1;
 const TIME_DISTANCE_OFFSET = 30;
 const SEC_DISTANCE = 10;
+export const MAX_GAS_USED = 31000000;
+export const MIN_GAS_USED = 0;
 
 function timeDiffToDistance(timeDiff: number): number {
     return timeDiff * SEC_DISTANCE + TIME_DISTANCE_OFFSET;
@@ -24,12 +28,7 @@ function vanishTransparency(material: THREE.MeshBasicMaterial) {
 }
 
 function scaleToNormal(group: THREE.Group) {
-    const scale = {
-        x: INITIAL_BLOCK_PART_SCALE,
-        y: INITIAL_BLOCK_PART_SCALE,
-        z: INITIAL_BLOCK_PART_SCALE,
-    };
-    new TWEEN.Tween(scale)
+    new TWEEN.Tween(group.scale)
         .to(
             {
                 x: 1,
@@ -38,9 +37,7 @@ function scaleToNormal(group: THREE.Group) {
             },
             2000,
         )
-        .onUpdate(() => {
-            group.scale.set(scale.x, scale.y, scale.z);
-        })
+
         .start();
 }
 
@@ -50,12 +47,7 @@ function moveOldChainPart(
     blockGroupTimeDiff: number,
     onComplete: () => void,
 ) {
-    const coords = {
-        x: threeEnv.blockchainGroup.position.x,
-        y: threeEnv.blockchainGroup.position.y,
-        z: threeEnv.blockchainGroup.position.z,
-    };
-    new TWEEN.Tween(coords)
+    new TWEEN.Tween(threeEnv.blockchainGroup.position)
         .to(
             {
                 x:
@@ -69,20 +61,12 @@ function moveOldChainPart(
             1000,
         )
         .easing(TWEEN.Easing.Quadratic.Out)
-        .onUpdate(() => {
-            threeEnv.blockchainGroup.position.set(coords.x, coords.y, coords.z);
-        })
         .start()
         .onComplete(onComplete);
 }
 
 function moveNewChainPart(blockGroup: THREE.Group, onComplete: () => void) {
-    const bgCoords = {
-        x: blockGroup.position.x,
-        y: blockGroup.position.y,
-        z: blockGroup.position.z,
-    };
-    new TWEEN.Tween(bgCoords)
+    new TWEEN.Tween(blockGroup.position)
         .to(
             {
                 x: 0,
@@ -92,9 +76,6 @@ function moveNewChainPart(blockGroup: THREE.Group, onComplete: () => void) {
             1000,
         )
         .easing(TWEEN.Easing.Quadratic.Out)
-        .onUpdate(() => {
-            blockGroup.position.set(bgCoords.x, bgCoords.y, bgCoords.z);
-        })
         .start()
         .onComplete(onComplete);
 }
@@ -104,8 +85,6 @@ export function createBlocks(
     blockBatchs: ethers.providers.Block[][],
 ) {
     const blocks = blockBatchs[blockBatchs.length - 1];
-    const maxGasUsed = 31000000;
-    const minGasUsed = 0;
 
     let startX = CHAIN_START_X_SHIFT;
     let blockTime = blocks[0].timestamp;
@@ -133,18 +112,19 @@ export function createBlocks(
     for (let i = 0; i < blocks.length; i++) {
         const currentBlock = blocks[i];
         const gasUsedRelation =
-            (blocks[i].gasUsed.toNumber() - minGasUsed) /
-            (maxGasUsed - minGasUsed);
+            (blocks[i].gasUsed.toNumber() - MIN_GAS_USED) /
+            (MAX_GAS_USED - MIN_GAS_USED);
         const timeDiff = blockTime - currentBlock.timestamp;
         startX = createBlock(
             startX,
-            currentBlock.number,
+            currentBlock,
             300 * gasUsedRelation,
             timeDiff,
             blockGroup,
             i !== 0,
             cubeMaterial,
             linkMaterial,
+            threeEnv.fonts[0],
         );
         blockTime = currentBlock.timestamp;
     }
@@ -205,56 +185,51 @@ export function createBlocks(
 
 function createBlock(
     startX: number,
-    blockNumber: number,
+    block: ethers.providers.Block,
     flexSize: number,
     timeDiff: number,
     blockChainGroup: THREE.Group,
     showLink: boolean,
     cubeMaterial: THREE.MeshBasicMaterial,
     linkMaterial: THREE.MeshBasicMaterial,
+    font: THREE.Font,
 ): number {
-    const length = 200;
     const fontSize = 20;
+    const scale = (100 + flexSize) / CUBE_LENGTH;
 
-    const scale = length / (100 + flexSize);
-
-    const geometry = new THREE.BoxGeometry(length, length, length);
-
-    const cube = new THREE.Mesh(geometry, cubeMaterial);
+    const cube = new THREE.Mesh(CubeGeometry, cubeMaterial);
+    cube.userData.block = block;
 
     const blockGroup = new THREE.Group();
     const box = new THREE.Box3();
     box.setFromCenterAndSize(
         cube.position,
-        new THREE.Vector3(length, length, length),
+        new THREE.Vector3(CUBE_LENGTH, CUBE_LENGTH, CUBE_LENGTH),
     );
 
-    const loader = new THREE.FontLoader();
-    loader.load('js/droid_sans_regular.typeface.json', function (response) {
-        const textGeo = new THREE.TextGeometry(`#${blockNumber}`, {
-            font: response,
-            height: 2,
-            size: fontSize,
-        });
-        const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-        const textMesh1 = new THREE.Mesh(textGeo, textMaterial);
-        textMesh1.geometry.computeBoundingBox();
-        const size = new THREE.Vector3();
-        textMesh1.geometry.boundingBox?.getSize(size);
-        textMesh1.position.set(
-            0 - size.length() / 2,
-            -(fontSize / 2),
-            length / 2,
-        );
-        blockGroup.add(textMesh1);
+    const textGeo = new THREE.TextGeometry(`#${block.number}`, {
+        font,
+        height: 2,
+        size: fontSize,
     });
+
+    const textMesh1 = new THREE.Mesh(textGeo, TextMaterial);
+    textMesh1.geometry.computeBoundingBox();
+    const textMeshSize = new THREE.Vector3();
+    textMesh1.geometry.boundingBox?.getSize(textMeshSize);
+    textMesh1.position.set(
+        0 - textMeshSize.length() / 2,
+        -(fontSize / 2),
+        CUBE_LENGTH / 2,
+    );
+    blockGroup.add(textMesh1);
 
     blockGroup.add(cube);
 
-    createFramgeSegments(length, cube.position, blockGroup);
+    createFramgeSegments(CUBE_LENGTH, cube.position, blockGroup);
 
     blockGroup.position.set(
-        startX - (length / 2) * scale - timeDiffToDistance(timeDiff),
+        startX - (CUBE_LENGTH / 2) * scale - timeDiffToDistance(timeDiff),
         0,
         0,
     );
@@ -286,7 +261,7 @@ function createLink(
     startX: number,
     linkMaterial: THREE.MeshBasicMaterial,
 ): THREE.Mesh {
-    const linkThickness = 2;
+    const linkThickness = 5;
     const link = new THREE.Mesh(
         new THREE.BoxGeometry(length, linkThickness, linkThickness),
         linkMaterial,
@@ -301,7 +276,6 @@ export function createFramgeSegments(
     group: THREE.Group,
 ) {
     const frameThickness = 3;
-    const frameMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
     const frame1 = new THREE.Mesh(
         new THREE.BoxGeometry(
@@ -309,7 +283,7 @@ export function createFramgeSegments(
             frameThickness,
             frameThickness,
         ),
-        frameMaterial,
+        FrameMaterial,
     );
     frame1.position.set(
         cubePosition.x,
@@ -325,7 +299,7 @@ export function createFramgeSegments(
             frameThickness,
             frameThickness,
         ),
-        frameMaterial,
+        FrameMaterial,
     );
     frame2.position.set(
         cubePosition.x,
@@ -341,7 +315,7 @@ export function createFramgeSegments(
             frameThickness,
             frameThickness,
         ),
-        frameMaterial,
+        FrameMaterial,
     );
     frame3.position.set(
         cubePosition.x,
@@ -357,7 +331,7 @@ export function createFramgeSegments(
             frameThickness,
             frameThickness,
         ),
-        frameMaterial,
+        FrameMaterial,
     );
     frame4.position.set(
         cubePosition.x,
@@ -373,7 +347,7 @@ export function createFramgeSegments(
             frameThickness,
             length - frameThickness,
         ),
-        frameMaterial,
+        FrameMaterial,
     );
     frame5.position.set(
         cubePosition.x + length / 2,
@@ -389,7 +363,7 @@ export function createFramgeSegments(
             frameThickness,
             length - frameThickness,
         ),
-        frameMaterial,
+        FrameMaterial,
     );
     frame6.position.set(
         cubePosition.x - length / 2,
@@ -405,7 +379,7 @@ export function createFramgeSegments(
             frameThickness,
             length - frameThickness,
         ),
-        frameMaterial,
+        FrameMaterial,
     );
     frame7.position.set(
         cubePosition.x - length / 2,
@@ -421,7 +395,7 @@ export function createFramgeSegments(
             frameThickness,
             length - frameThickness,
         ),
-        frameMaterial,
+        FrameMaterial,
     );
     frame8.position.set(
         cubePosition.x + length / 2,
@@ -437,7 +411,7 @@ export function createFramgeSegments(
             length - frameThickness,
             frameThickness,
         ),
-        frameMaterial,
+        FrameMaterial,
     );
     frame9.position.set(
         cubePosition.x + length / 2,
@@ -453,7 +427,7 @@ export function createFramgeSegments(
             length - frameThickness,
             frameThickness,
         ),
-        frameMaterial,
+        FrameMaterial,
     );
     frame10.position.set(
         cubePosition.x - length / 2,
@@ -469,7 +443,7 @@ export function createFramgeSegments(
             length - frameThickness,
             frameThickness,
         ),
-        frameMaterial,
+        FrameMaterial,
     );
     frame11.position.set(
         cubePosition.x - length / 2,
@@ -485,7 +459,7 @@ export function createFramgeSegments(
             length - frameThickness,
             frameThickness,
         ),
-        frameMaterial,
+        FrameMaterial,
     );
     frame12.position.set(
         cubePosition.x + length / 2,

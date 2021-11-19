@@ -1,18 +1,18 @@
-import { PerspectiveCamera, Scene } from 'three';
+import { PerspectiveCamera } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 import * as THREE from 'three';
-import { createFramgeSegments } from './Block';
-// @ts-ignore
-import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
 
 export interface ThreeEnv {
     camera: PerspectiveCamera;
     renderer: THREE.WebGLRenderer;
     scene: THREE.Scene;
     controls: OrbitControls;
+    raycaster: THREE.Raycaster;
     blockchainGroup: THREE.Group;
     cloudGroups: THREE.Group[];
+    selectedBlock?: THREE.Object3D;
+    fonts: THREE.Font[];
 }
 
 interface ParticlesData {
@@ -49,9 +49,20 @@ interface CloudData {
     settings: CloudSettings;
 }
 
-function createThree(width: number, height: number): ThreeEnv {
+export function loadFont(path: string): Promise<THREE.Font> {
+    const loader = new THREE.FontLoader();
+    return new Promise((resolve, reject) => {
+        loader.load(path, function (response) {
+            resolve(response);
+        });
+    });
+}
+
+async function createThree(width: number, height: number): Promise<ThreeEnv> {
     const camera = new THREE.PerspectiveCamera(45, width / height, 1, 100000);
-    camera.position.z = 2000;
+    camera.position.z = 3000;
+    camera.position.x = -3000;
+    camera.position.y = 1500;
 
     const scene = new THREE.Scene();
 
@@ -74,8 +85,10 @@ function createThree(width: number, height: number): ThreeEnv {
         renderer,
         scene,
         controls,
+        raycaster: new THREE.Raycaster(),
         cloudGroups: [],
         blockchainGroup,
+        fonts: [await loadFont('js/droid_sans_mono_regular.typeface.json')],
     };
 }
 
@@ -208,8 +221,6 @@ export function animate(
     nodeData: CloudData,
     txData: CloudData,
 ) {
-    TWEEN.update();
-
     if (nodeData) {
         animateCloud(threeEnv, nodeData);
     }
@@ -327,19 +338,18 @@ function createCloud(
     };
 }
 
-export function init(
-    setThree: React.Dispatch<React.SetStateAction<ThreeEnv | undefined>>,
+export async function init(
+    setThreeEnv: React.Dispatch<React.SetStateAction<ThreeEnv | undefined>>,
     threeContainer: React.RefObject<HTMLDivElement>,
 ) {
     const height = (threeContainer.current as any).clientHeight;
     const width = (threeContainer.current as any).clientWidth;
-    const threeEnv = createThree(height, width);
-
+    const threeEnv = await createThree(height, width);
     (threeContainer.current as any).appendChild(threeEnv.renderer.domElement);
 
     window.addEventListener(
         'resize',
-        () => onWindowResize(threeEnv, threeContainer, setThree),
+        () => onWindowResize(threeEnv, threeContainer, setThreeEnv),
 
         false,
     );
@@ -352,21 +362,21 @@ export function init(
         threeEnv,
         createCloud(nodeCloud, {
             r: 1000,
-            rHalfY: 6,
-            position: new THREE.Vector3(0, 500, 0),
+            rHalfY: 2,
+            position: new THREE.Vector3(0, 0, 0),
             showDots: true,
             showLines: true,
             minDistance: 150,
             limitConnections: false,
             maxConnections: 20,
             particleCount: 300,
-            dotSize: 2,
+            dotSize: 3,
             pointColor: '#ffffff',
             transparent: true,
             sizeAttenuation: false,
         }),
         createCloud(txCloud, {
-            r: 600,
+            r: 1000,
             rHalfY: 2,
             position: new THREE.Vector3(0, 0, 0),
             showDots: true,
@@ -376,10 +386,10 @@ export function init(
             maxConnections: 0,
             particleCount: 500,
             dotSize: 2,
-            pointColor: '#0042ad',
+            pointColor: '#7f5700',
             transparent: false,
             sizeAttenuation: false,
         }),
     );
-    setThree(threeEnv);
+    setThreeEnv(threeEnv);
 }
