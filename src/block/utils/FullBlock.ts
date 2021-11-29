@@ -113,7 +113,7 @@ async function createTxPlane(
         const plane = new THREE.Mesh(
             TxPlaneGeometry,
             new THREE.MeshBasicMaterial({
-                color: 0xe89e00,
+                color: 0x007f1b,
                 side: THREE.DoubleSide,
                 transparent: true,
                 opacity: 0.5 + 0.5 * (tx.data.length / maxDataSize),

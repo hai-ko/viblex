@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 export const TxPlaneMaterial = new THREE.MeshBasicMaterial({
-    color: 0x7f5700,
+    color: 0x007f1b,
     side: THREE.DoubleSide,
 });
 
@@ -14,7 +14,7 @@ export const CubeMaterial = new THREE.MeshBasicMaterial({
 });
 
 export const SelectedCubeMaterial = new THREE.MeshBasicMaterial({
-    color: 0x7f5700,
+    color: 0x007f1b,
     transparent: true,
     opacity: 0.5,
 });

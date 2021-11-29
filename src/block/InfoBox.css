@@ -1,0 +1,27 @@
+.info-value {
+    font-family: monospace;
+}
+
+.info-card .card-body {
+    padding: 10px;
+}
+
+.info-card .card-body:hover {
+    cursor: default;
+}
+
+
+.menu .card {
+    color: rgba(255, 174, 52, 0.9);
+    background: rgba(255, 174, 52, 0.1);
+    outline: 1px solid rgba(255, 174, 52, 0.5);
+    border-radius: 0px;
+} 
+
+.etherscan-link {
+    color: rgba(255, 174, 52, 0.9);
+}
+
+.row-space {
+    margin-bottom: 1rem;
+}

@@ -11,7 +11,7 @@
     outline: 1px solid rgba(255, 174, 52, 0.5);
     border: 0px;
     padding: 5px 10px;
-    cursor: pointer;
+    cursor: pointer !important;
     border-radius: 0px !important;
     margin-left: 10px;
 }
@@ -35,3 +35,9 @@
     
     text-align: left;
 }
+
+.menu-end {
+    padding-right: 10px;
+    min-width: 400px;
+}
+

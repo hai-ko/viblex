@@ -5,10 +5,20 @@ import detectEthereumProvider from '@metamask/detect-provider';
 import { ethers } from 'ethers';
 import { createBlocks } from './utils/Block';
 import { onClick } from './utils/Intersection';
+import InfoBoxView from './InfoBoxView';
+import { CubeMaterial } from './utils/Materials';
+import { Object3D } from 'three';
 
 interface BlockViewProps {
     view: string;
     setView: (view: string) => void;
+}
+
+export enum BlockViewState {
+    NoSelection,
+    BlockSelected,
+    BlockSelectedMin,
+    TransactionSelected,
 }
 
 async function createConnection(
@@ -65,6 +75,44 @@ function BlockView(props: BlockViewProps) {
         ethers.providers.Web3Provider | undefined
     >();
     const [blocks, setBlocks] = useState<ethers.providers.Block[][]>([]);
+    const [selectedElement, setSelectedElement] = useState<
+        ethers.providers.Block | undefined
+    >();
+    const [blockViewState, setBlockViewState] = useState<BlockViewState>(
+        BlockViewState.NoSelection,
+    );
+
+    const selectBlock = (block: ethers.providers.Block) => {
+        setSelectedElement(block);
+        if (blockViewState === BlockViewState.BlockSelectedMin) {
+            setBlockViewState(BlockViewState.BlockSelectedMin);
+        } else {
+            setBlockViewState(BlockViewState.BlockSelected);
+        }
+    };
+
+    const minimize = () => {
+        if (blockViewState === BlockViewState.BlockSelected) {
+            setBlockViewState(BlockViewState.BlockSelectedMin);
+        }
+    };
+
+    const maximize = () => {
+        if (blockViewState === BlockViewState.BlockSelectedMin) {
+            setBlockViewState(BlockViewState.BlockSelected);
+        }
+    };
+
+    const unselect = () => {
+        if (blockViewState !== BlockViewState.NoSelection && threeEnv) {
+            const block = threeEnv.selectedBlock as any;
+            block.material = CubeMaterial;
+            (block.parent as Object3D).remove(block.userData.fullBlock);
+            delete block.userData.fullBlock;
+            threeEnv.selectedBlock = undefined;
+            setBlockViewState(BlockViewState.NoSelection);
+        }
+    };
 
     useEffect(() => {
         if (!ethProvider) {
@@ -104,15 +152,22 @@ function BlockView(props: BlockViewProps) {
                 onClick={(
                     event: React.MouseEvent<HTMLDivElement, MouseEvent>,
                 ) => {
-                    if (ethProvider) onClick(threeEnv, event, ethProvider);
+                    if (ethProvider)
+                        onClick(threeEnv, event, ethProvider, selectBlock);
                 }}
             >
                 <Menu
-                    zoomIn={() => {}}
-                    zoomOut={() => {}}
-                    autoZoom={() => {}}
                     setView={props.setView}
                     defaultView={props.view}
+                    infoBox={
+                        <InfoBoxView
+                            selectedElement={selectedElement}
+                            blockViewState={blockViewState}
+                            minimize={minimize}
+                            maximize={maximize}
+                            unselect={unselect}
+                        />
+                    }
                 />
             </div>
         </>
