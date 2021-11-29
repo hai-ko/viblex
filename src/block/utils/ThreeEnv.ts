@@ -386,7 +386,7 @@ export async function init(
             maxConnections: 0,
             particleCount: 500,
             dotSize: 2,
-            pointColor: '#7f5700',
+            pointColor: '#007f1b',
             transparent: false,
             sizeAttenuation: false,
         }),

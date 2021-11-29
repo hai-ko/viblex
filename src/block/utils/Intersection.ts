@@ -9,9 +9,10 @@ export function onClick(
     threeEnv: ThreeEnv | undefined,
     event: React.MouseEvent<HTMLDivElement, MouseEvent>,
     ethProvider: ethers.providers.Web3Provider,
+    selectBlock: (block: ethers.providers.Block) => void,
 ) {
     if (threeEnv) {
-        event.preventDefault();
+        //event.preventDefault();
         const mouse = new THREE.Vector2();
 
         const canvasBounds = threeEnv.renderer
@@ -52,13 +53,8 @@ export function onClick(
             filtered[0].object.userData.fullBlock = fullBlockGroup;
 
             threeEnv.selectedBlock = filtered[0].object;
+            selectBlock(filtered[0].object.userData.block);
         } else if (filtered.length === 0 && threeEnv.selectedBlock) {
-            // (threeEnv.selectedBlock as any).material = CubeMaterial;
-            // (threeEnv.selectedBlock.parent as Object3D).remove(
-            //     threeEnv.selectedBlock.userData.fullBlock,
-            // );
-            // delete threeEnv.selectedBlock.userData.fullBlock;
-            // threeEnv.selectedBlock = undefined;
         } else if (
             threeEnv.selectedBlock &&
             filtered[0].object.userData.block?.number !==
@@ -81,6 +77,7 @@ export function onClick(
             (filtered[0].object as any).material = SelectedCubeMaterial;
 
             threeEnv.selectedBlock = filtered[0].object;
+            selectBlock(filtered[0].object.userData.block);
         }
     }
 }
