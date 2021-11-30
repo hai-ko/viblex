@@ -8,6 +8,7 @@ import { onClick } from './utils/Intersection';
 import InfoBoxView from './InfoBoxView';
 import { CubeMaterial } from './utils/Materials';
 import { Object3D } from 'three';
+import PageVisibility from 'react-page-visibility';
 
 interface BlockViewProps {
     view: string;
@@ -42,6 +43,9 @@ async function getBlocks(
     ethProvider: ethers.providers.Web3Provider,
     loadedBlocks: ethers.providers.Block[][],
     setBlocks: React.Dispatch<React.SetStateAction<ethers.providers.Block[][]>>,
+    setGetBlocksTimeout: React.Dispatch<
+        React.SetStateAction<NodeJS.Timeout | undefined>
+    >,
 ) {
     const currentBlockNumber = await ethProvider.getBlockNumber();
     let blocksToLoad = 50;
@@ -63,13 +67,23 @@ async function getBlocks(
         setBlocks(newLoadedBlocks);
     }
 
-    setTimeout(
-        () => getBlocks(threeEnv, ethProvider, newLoadedBlocks, setBlocks),
-        30000,
+    setGetBlocksTimeout(
+        setTimeout(
+            () =>
+                getBlocks(
+                    threeEnv,
+                    ethProvider,
+                    newLoadedBlocks,
+                    setBlocks,
+                    setGetBlocksTimeout,
+                ),
+            30000,
+        ),
     );
 }
 
 function BlockView(props: BlockViewProps) {
+    const [getBlocksTimeout, setGetBlocksTimeout] = useState<NodeJS.Timeout>();
     const threeContainer = useRef<HTMLDivElement>(null);
     const [threeEnv, setThreeEnv] = useState<ThreeEnv | undefined>();
     const [ethProvider, setEthProvider] = useState<
@@ -128,12 +142,44 @@ function BlockView(props: BlockViewProps) {
         }
     };
 
+    const visibilityHandler = (isVisable: boolean) => {
+        if (!isVisable && getBlocksTimeout) {
+            clearTimeout(getBlocksTimeout);
+            setGetBlocksTimeout(undefined);
+        } else if (
+            isVisable &&
+            !getBlocksTimeout &&
+            threeEnv &&
+            ethProvider &&
+            blocks.length > 0
+        ) {
+            getBlocks(
+                threeEnv,
+                ethProvider,
+                blocks,
+                setBlocks,
+                setGetBlocksTimeout,
+            );
+        }
+    };
+
     useEffect(() => {
         if (!ethProvider) {
             createConnection(setEthProvider);
         } else if (threeEnv && blocks.length === 0) {
-            getBlocks(threeEnv, ethProvider, blocks, setBlocks);
+            getBlocks(
+                threeEnv,
+                ethProvider,
+                blocks,
+                setBlocks,
+                setGetBlocksTimeout,
+            );
         }
+        return () => {
+            if (getBlocksTimeout) {
+                clearTimeout(getBlocksTimeout);
+            }
+        };
     }, [ethProvider, threeEnv]);
 
     useEffect(() => {
@@ -159,7 +205,7 @@ function BlockView(props: BlockViewProps) {
     }, [threeEnv]);
 
     return (
-        <>
+        <PageVisibility onChange={visibilityHandler}>
             <div
                 ref={threeContainer}
                 className="w-100 h-100 three-container"
@@ -190,7 +236,7 @@ function BlockView(props: BlockViewProps) {
                     }
                 />
             </div>
-        </>
+        </PageVisibility>
     );
 }
 
