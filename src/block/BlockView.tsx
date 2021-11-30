@@ -19,6 +19,7 @@ export enum BlockViewState {
     BlockSelected,
     BlockSelectedMin,
     TransactionSelected,
+    TransactionSelectedMin,
 }
 
 async function createConnection(
@@ -76,7 +77,9 @@ function BlockView(props: BlockViewProps) {
     >();
     const [blocks, setBlocks] = useState<ethers.providers.Block[][]>([]);
     const [selectedElement, setSelectedElement] = useState<
-        ethers.providers.Block | undefined
+        | ethers.providers.Block
+        | ethers.providers.TransactionResponse
+        | undefined
     >();
     const [blockViewState, setBlockViewState] = useState<BlockViewState>(
         BlockViewState.NoSelection,
@@ -84,22 +87,33 @@ function BlockView(props: BlockViewProps) {
 
     const selectBlock = (block: ethers.providers.Block) => {
         setSelectedElement(block);
-        if (blockViewState === BlockViewState.BlockSelectedMin) {
-            setBlockViewState(BlockViewState.BlockSelectedMin);
-        } else {
+        if (blockViewState !== BlockViewState.BlockSelectedMin) {
             setBlockViewState(BlockViewState.BlockSelected);
+        }
+    };
+
+    const selectTransaction = (
+        transaction: ethers.providers.TransactionResponse,
+    ) => {
+        setSelectedElement(transaction);
+        if (blockViewState !== BlockViewState.TransactionSelectedMin) {
+            setBlockViewState(BlockViewState.TransactionSelected);
         }
     };
 
     const minimize = () => {
         if (blockViewState === BlockViewState.BlockSelected) {
             setBlockViewState(BlockViewState.BlockSelectedMin);
+        } else if (blockViewState === BlockViewState.TransactionSelected) {
+            setBlockViewState(BlockViewState.TransactionSelectedMin);
         }
     };
 
     const maximize = () => {
         if (blockViewState === BlockViewState.BlockSelectedMin) {
             setBlockViewState(BlockViewState.BlockSelected);
+        } else if (blockViewState === BlockViewState.TransactionSelectedMin) {
+            setBlockViewState(BlockViewState.TransactionSelected);
         }
     };
 
@@ -153,7 +167,13 @@ function BlockView(props: BlockViewProps) {
                     event: React.MouseEvent<HTMLDivElement, MouseEvent>,
                 ) => {
                     if (ethProvider)
-                        onClick(threeEnv, event, ethProvider, selectBlock);
+                        onClick(
+                            threeEnv,
+                            event,
+                            ethProvider,
+                            selectBlock,
+                            selectTransaction,
+                        );
                 }}
             >
                 <Menu

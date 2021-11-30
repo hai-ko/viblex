@@ -2,7 +2,8 @@ import { ethers } from 'ethers';
 import * as THREE from 'three';
 import { Object3D } from 'three';
 import { createFullBlock } from './FullBlock';
-import { CubeMaterial, SelectedCubeMaterial } from './Materials';
+import { CubeMaterial, FrameMaterial, SelectedCubeMaterial } from './Materials';
+import { createFrame } from './SharedObjects';
 import { ThreeEnv } from './ThreeEnv';
 
 export function onClick(
@@ -10,6 +11,9 @@ export function onClick(
     event: React.MouseEvent<HTMLDivElement, MouseEvent>,
     ethProvider: ethers.providers.Web3Provider,
     selectBlock: (block: ethers.providers.Block) => void,
+    selectTransaction: (
+        transaction: ethers.providers.TransactionResponse,
+    ) => void,
 ) {
     if (threeEnv) {
         //event.preventDefault();
@@ -38,48 +42,96 @@ export function onClick(
         const intersects = threeEnv.raycaster.intersectObjects(objects, false);
         intersects.sort(sortIntersections);
         const filtered = intersects.filter((intersect) =>
-            intersect.object.userData.block ? true : false,
+            intersect.object.userData.block
+                ? true
+                : false || intersect.object.userData.transaction
+                ? true
+                : false,
         );
 
-        if (filtered[0] && !threeEnv.selectedBlock) {
-            (filtered[0].object as any).material = SelectedCubeMaterial;
+        const selectedElement: THREE.Intersection | undefined = filtered[0];
 
-            const fullBlockGroup = createFullBlock(
-                filtered[0].object.userData.block,
-                (filtered[0].object.parent as Object3D).scale,
-                ethProvider,
-            );
-            (filtered[0].object.parent as Object3D).add(fullBlockGroup);
-            filtered[0].object.userData.fullBlock = fullBlockGroup;
-
-            threeEnv.selectedBlock = filtered[0].object;
-            selectBlock(filtered[0].object.userData.block);
-        } else if (filtered.length === 0 && threeEnv.selectedBlock) {
+        if (selectedElement && selectedElement.object.userData.block) {
+            blockSelected(selectedElement, threeEnv, ethProvider, selectBlock);
         } else if (
-            threeEnv.selectedBlock &&
-            filtered[0].object.userData.block?.number !==
-                threeEnv.selectedBlock.userData.block?.number
+            selectedElement &&
+            selectedElement.object.userData.transaction
         ) {
-            (threeEnv.selectedBlock as any).material = CubeMaterial;
-
-            const fullBlockGroup = createFullBlock(
-                filtered[0].object.userData.block,
-                (filtered[0].object.parent as Object3D).scale,
-                ethProvider,
-            );
-            (filtered[0].object.parent as Object3D).add(fullBlockGroup);
-            filtered[0].object.userData.fullBlock = fullBlockGroup;
-            (threeEnv.selectedBlock.parent as Object3D).remove(
-                threeEnv.selectedBlock.userData.fullBlock,
-            );
-            delete threeEnv.selectedBlock.userData.fullBlock;
-
-            (filtered[0].object as any).material = SelectedCubeMaterial;
-
-            threeEnv.selectedBlock = filtered[0].object;
-            selectBlock(filtered[0].object.userData.block);
+            transactionSelected(selectedElement, threeEnv, selectTransaction);
         }
     }
+}
+
+function blockSelected(
+    selectedElement: THREE.Intersection,
+    threeEnv: ThreeEnv,
+    ethProvider: ethers.providers.Web3Provider,
+    selectBlock: (block: ethers.providers.Block) => void,
+) {
+    if (
+        threeEnv.selectedBlock &&
+        selectedElement.object.userData.block?.number !==
+            threeEnv.selectedBlock.userData.block?.number
+    ) {
+        (threeEnv.selectedBlock as any).material = CubeMaterial;
+        (threeEnv.selectedBlock.parent as Object3D).remove(
+            threeEnv.selectedBlock.userData.fullBlock,
+        );
+        delete threeEnv.selectedBlock.userData.fullBlock;
+    }
+
+    if (
+        (threeEnv.selectedBlock &&
+            selectedElement.object.userData.block?.number !==
+                threeEnv.selectedBlock.userData.block?.number) ||
+        !threeEnv.selectedBlock
+    ) {
+        (selectedElement.object as any).material = SelectedCubeMaterial;
+
+        const fullBlockGroup = createFullBlock(
+            selectedElement.object.userData.block,
+            (selectedElement.object.parent as Object3D).scale,
+            ethProvider,
+        );
+        (selectedElement.object.parent as Object3D).add(fullBlockGroup);
+        selectedElement.object.userData.fullBlock = fullBlockGroup;
+
+        threeEnv.selectedBlock = selectedElement.object;
+        selectBlock(selectedElement.object.userData.block);
+    }
+}
+
+function transactionSelected(
+    selectedElement: THREE.Intersection,
+    threeEnv: ThreeEnv,
+    selectTransaction: (
+        transaction: ethers.providers.TransactionResponse,
+    ) => void,
+) {
+    if (threeEnv.selectedTransaction) {
+        threeEnv.selectedTransaction.parent?.remove(
+            threeEnv.selectedTransaction.userData.transactionFrame,
+        );
+    }
+
+    const size: number = (selectedElement.object as any).geometry.parameters
+        .width;
+    const transactionFrame = createFrame(
+        selectedElement.object.position,
+        size + 7,
+        size + 7,
+        FrameMaterial,
+    );
+
+    selectedElement.object.parent?.add(transactionFrame);
+    selectedElement.object.userData.transactionFrame = transactionFrame;
+
+    threeEnv.selectedTransaction = selectedElement.object;
+
+    selectTransaction(
+        selectedElement.object.userData
+            .transaction as ethers.providers.TransactionResponse,
+    );
 }
 
 function sortIntersections(a: any, b: any) {

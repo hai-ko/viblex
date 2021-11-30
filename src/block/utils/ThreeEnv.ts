@@ -12,6 +12,7 @@ export interface ThreeEnv {
     blockchainGroup: THREE.Group;
     cloudGroups: THREE.Group[];
     selectedBlock?: THREE.Object3D;
+    selectedTransaction?: THREE.Object3D;
     fonts: THREE.Font[];
 }
 
