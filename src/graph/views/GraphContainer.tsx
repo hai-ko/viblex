@@ -14,6 +14,13 @@ interface GraphContainerProps {
     view: string;
 }
 
+export enum GraphViewState {
+    Wait,
+    Ready,
+    NodeSelected,
+    NodeMaxed,
+}
+
 function GraphContainer(props: GraphContainerProps) {
     const [filesDag, setFilesDag] = useState<DAG<ParsedSolFile> | undefined>();
     const [contractsDag, setContractsDag] = useState<

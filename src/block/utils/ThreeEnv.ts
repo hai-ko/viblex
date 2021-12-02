@@ -60,7 +60,7 @@ export function loadFont(path: string): Promise<THREE.Font> {
 }
 
 async function createThree(width: number, height: number): Promise<ThreeEnv> {
-    const camera = new THREE.PerspectiveCamera(45, width / height, 1, 100000);
+    const camera = new THREE.PerspectiveCamera(45, width / height, 1, 1000000);
     camera.position.z = 3000;
     camera.position.x = -3000;
     camera.position.y = 1500;
@@ -74,7 +74,7 @@ async function createThree(width: number, height: number): Promise<ThreeEnv> {
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.minDistance = 1000;
-    controls.maxDistance = 9000;
+    controls.maxDistance = 7000;
 
     const ethNodesGroup = new THREE.Group();
     const blockchainGroup = new THREE.Group();
@@ -373,7 +373,7 @@ export async function init(
             particleCount: 300,
             dotSize: 3,
             pointColor: '#ffffff',
-            transparent: true,
+            transparent: false,
             sizeAttenuation: false,
         }),
         createCloud(txCloud, {

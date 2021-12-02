@@ -11,6 +11,7 @@ import { useRef } from 'react';
 import { getAllRemixFiles } from './remix-utils/RemixFileHandler';
 import GraphContainer from './graph/views/GraphContainer';
 import BlockView from './block/BlockView';
+import TransactionSequenceView from './graph/views/TransactionSequenceView';
 
 function App() {
     const [client, setClient] = useState<
@@ -41,20 +42,34 @@ function App() {
 
     const graphContainer = useRef<HTMLDivElement>(null);
 
-    return (
-        <div className="App h-100 w-100" ref={graphContainer}>
-            {view === 'block' ? (
-                <BlockView view={view} setView={setView} />
-            ) : (
-                graphContainer.current &&
-                files && (
+    const getSelectedView = (): JSX.Element => {
+        switch (view) {
+            case 'block':
+                return <BlockView view={view} setView={setView} />;
+            case 'transactions':
+                return (
+                    <TransactionSequenceView view={view} setView={setView} />
+                );
+            case 'files':
+            case 'contracts':
+                return graphContainer.current && files ? (
                     <GraphContainer
                         files={files}
                         view={view}
                         setView={setView}
                     />
-                )
-            )}
+                ) : (
+                    <></>
+                );
+
+            default:
+                return <div>Unknown view slected.</div>;
+        }
+    };
+
+    return (
+        <div className="App h-100 w-100" ref={graphContainer}>
+            {getSelectedView()}
         </div>
     );
 }

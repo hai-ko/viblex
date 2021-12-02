@@ -17,6 +17,14 @@
     background-color: rgba(74, 105, 1, 0.5);
 }
 
+.account-node {
+    background-color: rgb(117, 0, 0);
+}
+
+.call-type {
+    text-transform: uppercase;
+    font-size: 2.5rem;
+}
 
 
 .file-view {
@@ -68,9 +76,25 @@
 
 }
 
+ .seq-input-data {
+ 
+    font-family: monospace;
+   
+
+}
+
 .node .file-info {
     margin-top: 1rem;
     font-size: 30px;
+    word-break: break-all;
+    color: rgba(255, 255, 255, 0.75);
+    /* text-shadow: 0 0 10px rgba(0,255,255,0.95); */
+
+}
+
+.node .tx-info {
+    margin-top: 1rem;
+    font-size: 50px;
     word-break: break-all;
     color: rgba(255, 255, 255, 0.75);
     /* text-shadow: 0 0 10px rgba(0,255,255,0.95); */

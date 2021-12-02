@@ -1,9 +1,36 @@
 import * as THREE from 'three';
 import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer';
+import { ReplayTransaction } from '../../lib/TransactionSequence';
 import { showImportPaths, getSegments } from './../utils/EdgeSegments';
 import { GraphStyle } from './../utils/GraphStyle';
 import { DAG, GraphNode, ThreeGraphNode } from './../utils/NodePosition';
 import { RenderedNodes } from './../utils/ThreeEnv';
+
+export enum SeqNodeType {
+    Account,
+    Transaction,
+    TransactionResult,
+}
+
+export interface CSSObject3DPair {
+    css3DObject: CSS3DObject;
+    object3D: THREE.Object3D;
+}
+
+export interface SequenceDiagramNode {
+    css3DObject: CSS3DObject;
+    object3D: THREE.Object3D;
+    portal: PortalParts<ReplayTransaction | string>;
+    seqNodeType: SeqNodeType;
+    txId: number;
+}
+
+export interface PosMappingData {
+    graphStyle: GraphStyle;
+    width: number;
+    height: number;
+    camera: THREE.PerspectiveCamera;
+}
 
 export interface PortalParts<T> {
     graphStyle: GraphStyle;
@@ -11,6 +38,12 @@ export interface PortalParts<T> {
     onMouseLeave: () => void;
     onMouseOver: () => void;
     nodeDiv: HTMLDivElement;
+}
+
+export interface RenderedSequenceNodes {
+    sequenceDiagramNodes: SequenceDiagramNode[];
+
+    graphStyle: GraphStyle;
 }
 
 export function nodePosToThreePos(
@@ -37,11 +70,8 @@ export function nodePosToThreePos(
 }
 
 export function createNodes<T>(
-    graphStyle: GraphStyle,
     dag: DAG<T>,
-    height: number,
-    width: number,
-    camera: THREE.PerspectiveCamera,
+    posMappingData: PosMappingData,
 ): RenderedNodes<T> {
     const threeNodes: ThreeGraphNode<T>[] = [];
     const portals: PortalParts<T>[] = [];
@@ -62,9 +92,9 @@ export function createNodes<T>(
                     (o: CSS3DObject, xPos: number, isLeftArrow?: boolean) =>
                         isLeftArrow
                             ? (o.element.style.borderRightColor =
-                                  graphStyle.SEGMENT_NOT_HIGHLIGHTED_COLOR)
+                                  posMappingData.graphStyle.SEGMENT_NOT_HIGHLIGHTED_COLOR)
                             : (o.element.style.backgroundColor =
-                                  graphStyle.SEGMENT_NOT_HIGHLIGHTED_COLOR),
+                                  posMappingData.graphStyle.SEGMENT_NOT_HIGHLIGHTED_COLOR),
                 );
                 showImportPaths(
                     dag.edges.filter(
@@ -74,9 +104,9 @@ export function createNodes<T>(
                     (o: CSS3DObject, xPos: number, isLeftArrow?: boolean) =>
                         isLeftArrow
                             ? (o.element.style.borderRightColor =
-                                  graphStyle.SEGMENT_HIGHLIGHTED_COLOR)
+                                  posMappingData.graphStyle.SEGMENT_HIGHLIGHTED_COLOR)
                             : (o.element.style.backgroundColor =
-                                  graphStyle.SEGMENT_HIGHLIGHTED_COLOR),
+                                  posMappingData.graphStyle.SEGMENT_HIGHLIGHTED_COLOR),
                 );
             };
 
@@ -87,33 +117,21 @@ export function createNodes<T>(
                     (o: CSS3DObject, xPos: number, isLeftArrow?: boolean) =>
                         isLeftArrow
                             ? (o.element.style.borderRightColor =
-                                  graphStyle.SEGMENT_COLOR)
+                                  posMappingData.graphStyle.SEGMENT_COLOR)
                             : (o.element.style.backgroundColor =
-                                  graphStyle.SEGMENT_COLOR),
+                                  posMappingData.graphStyle.SEGMENT_COLOR),
                 );
             };
 
             const object = new THREE.Object3D();
-            object.position.x = nodeXIndexToPos(
-                node.xPos,
-                height,
-                width,
-                camera,
-                graphStyle,
-            );
+            object.position.x = nodeXIndexToPos(node.xPos, posMappingData);
 
-            object.position.y = nodeYIndexToPos(
-                node.yPos,
-                height,
-                width,
-                camera,
-                graphStyle,
-            );
+            object.position.y = nodeYIndexToPos(node.yPos, posMappingData);
 
             const segments = getSegments(
                 object.position.x,
                 object.position.y,
-                graphStyle,
+                posMappingData.graphStyle,
             );
 
             threeNodes.push({
@@ -126,7 +144,7 @@ export function createNodes<T>(
             });
 
             portals.push({
-                graphStyle,
+                graphStyle: posMappingData.graphStyle,
                 node,
                 onMouseLeave,
                 onMouseOver,
@@ -135,54 +153,51 @@ export function createNodes<T>(
         }
     }
 
-    const emptyNodes = fillEmptyNodes(
-        threeNodes,
-        height,
-        width,
-        camera,
-        graphStyle,
-    );
+    const emptyNodes = fillEmptyNodes(threeNodes, posMappingData);
 
-    return { threeNodes: [...threeNodes, ...emptyNodes], portals, graphStyle };
+    return {
+        threeNodes: [...threeNodes, ...emptyNodes],
+        portals,
+        graphStyle: posMappingData.graphStyle,
+    };
 }
 
-function nodeXIndexToPos(
-    index: number,
-    height: number,
-    width: number,
-    camera: THREE.PerspectiveCamera,
-    graphStyle: GraphStyle,
-) {
-    const pos = nodePosToThreePos(0, 40, height, width, camera);
+export function nodeXIndexToPos(index: number, posMappingData: PosMappingData) {
+    const pos = nodePosToThreePos(
+        0,
+        40,
+        posMappingData.height,
+        posMappingData.width,
+        posMappingData.camera,
+    );
     return (
         parseInt(index.toString()) *
-            (graphStyle.ELEMENT_WIDTH + graphStyle.COL_DISTANCE) +
+            (posMappingData.graphStyle.ELEMENT_WIDTH +
+                posMappingData.graphStyle.COL_DISTANCE) +
         pos.x
     );
 }
 
-function nodeYIndexToPos(
-    index: number,
-    height: number,
-    width: number,
-    camera: THREE.PerspectiveCamera,
-    graphStyle: GraphStyle,
-) {
-    const pos = nodePosToThreePos(0, 40, height, width, camera);
+export function nodeYIndexToPos(index: number, posMappingData: PosMappingData) {
+    const pos = nodePosToThreePos(
+        0,
+        40,
+        posMappingData.height,
+        posMappingData.width,
+        posMappingData.camera,
+    );
     return (
         -(
             parseInt(index.toString()) *
-            (graphStyle.ELEMENT_HEIGHT + graphStyle.COL_DISTANCE)
+            (posMappingData.graphStyle.ELEMENT_HEIGHT +
+                posMappingData.graphStyle.COL_DISTANCE)
         ) + pos.y
     );
 }
 
 function fillEmptyNodes<T>(
     threeNodes: ThreeGraphNode<T>[],
-    height: number,
-    width: number,
-    camera: THREE.PerspectiveCamera,
-    graphStyle: GraphStyle,
+    posMappingData: PosMappingData,
 ): ThreeGraphNode<T>[] {
     const maxX = Math.max(...threeNodes.map((node) => node.xPos));
     const maxY = Math.max(...threeNodes.map((node) => node.yPos));
@@ -193,9 +208,9 @@ function fillEmptyNodes<T>(
                 !threeNodes.find((node) => node.xPos === x && node.yPos === y)
             ) {
                 const segments = getSegments(
-                    nodeXIndexToPos(x, height, width, camera, graphStyle),
-                    nodeYIndexToPos(y, height, width, camera, graphStyle),
-                    graphStyle,
+                    nodeXIndexToPos(x, posMappingData),
+                    nodeYIndexToPos(y, posMappingData),
+                    posMappingData.graphStyle,
                 );
 
                 emptyNodes.push({

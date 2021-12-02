@@ -5,7 +5,7 @@ import { getFileDisplayName } from '../../lib/FileHandling';
 import { GraphStyle } from './../utils/GraphStyle';
 import Icon from '../../shared/Icon';
 import { GraphNode } from './../utils/NodePosition';
-import { GraphViewState } from './ContractGraph';
+import { GraphViewState } from './GraphContainer';
 
 interface FileNodeProps {
     node: GraphNode<ParsedSolFile>;

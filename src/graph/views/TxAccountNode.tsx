@@ -1,16 +1,12 @@
 import './Graph.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
-import { ParsedSolFile } from '../../lib/ParseSolidity';
 import { GraphStyle } from './../utils/GraphStyle';
 import { GraphNode } from './../utils/NodePosition';
-import { ContractDefinition } from '@solidity-parser/parser/dist/src/ast-types';
-import { Context } from '../../lib/Graph';
-import { getIcon } from './ContractView';
 import { getFileDisplayName } from '../../lib/FileHandling';
 import { GraphViewState } from './GraphContainer';
 
-interface FileNodeProps {
-    node: GraphNode<Context<ParsedSolFile, ContractDefinition>>;
+interface TxAccountNodeProps {
+    node: GraphNode<string>;
     graphStyle: GraphStyle;
     onMouseLeave?: () => void;
     onMouseOver?: () => void;
@@ -21,19 +17,14 @@ interface FileNodeProps {
     setNodeToMax?: (nodeId: string | undefined) => void;
 }
 
-function ContractNode(props: FileNodeProps) {
+function TxAccountNode(props: TxAccountNodeProps) {
     const isNodeSelected =
         props.selectedNodeId === props.node.id ||
         props.nodeToMax === props.node.id;
 
     const nodeDivStyle: React.CSSProperties = {
         width: props.graphStyle.ELEMENT_WIDTH.toString() + 'px',
-        height:
-            (isNodeSelected
-                ? props.graphStyle.ELEMENT_HEIGHT +
-                  props.graphStyle.EXPAND_HEIGHT
-                : props.graphStyle.ELEMENT_HEIGHT
-            ).toString() + 'px',
+        height: props.graphStyle.ELEMENT_HEIGHT + 'px',
         borderWidth: props.graphStyle.SEGMENT_THICKNESS + 'px',
         borderColor: isNodeSelected
             ? props.graphStyle.SEGMENT_HIGHLIGHTED_COLOR
@@ -41,13 +32,9 @@ function ContractNode(props: FileNodeProps) {
         borderStyle: 'solid',
     };
 
-    return props.node.element ? (
+    return (
         <div
-            className={`node ${
-                props.node.element.element.kind === 'contract'
-                    ? 'contract-node'
-                    : 'contract-other'
-            }`}
+            className={`node account-node`}
             style={nodeDivStyle}
             onMouseDown={() => {
                 if (
@@ -81,11 +68,11 @@ function ContractNode(props: FileNodeProps) {
             }}
         >
             <div className="row">
-                <div className="col file-title text-left">
-                    {getFileDisplayName(props.node.element.element.name)}
+                <div className="col file-title text-center seq-input-data">
+                    {props.node.element && props.node.element}
                 </div>
             </div>
-            {isNodeSelected && (
+            {/* {isNodeSelected && (
                 <div className="row kind-info">
                     <div className="col-12">
                         <span className="badge bg-light text-dark">
@@ -94,9 +81,9 @@ function ContractNode(props: FileNodeProps) {
                         </span>
                     </div>
                 </div>
-            )}
+            )} */}
         </div>
-    ) : null;
+    );
 }
 
-export default ContractNode;
+export default TxAccountNode;
