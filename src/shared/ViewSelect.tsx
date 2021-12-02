@@ -15,6 +15,7 @@ function ViewSelect(props: ViewSelectProps) {
         >
             <option value="files">Files</option>
             <option value="contracts">Contracts</option>
+            <option value="transactions">Transaction</option>
             <option value="block">Block</option>
         </select>
     );

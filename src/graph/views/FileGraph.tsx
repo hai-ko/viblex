@@ -16,35 +16,13 @@ import ReactDOM from 'react-dom';
 import FileNode from './FileNode';
 import { centerNode, expendNode } from './../utils/NodeSelection';
 import FileView from './FileView';
+import { zoomIn, zoomOut } from '../utils/Zoom';
+import { GraphViewState } from './GraphContainer';
 
 interface GraphProps {
     filesDAG: DAG<ParsedSolFile>;
     setView: (view: string) => void;
     view: string;
-}
-
-export enum GraphViewState {
-    Wait,
-    Ready,
-    NodeSelected,
-    NodeMaxed,
-}
-
-function zoomIn(three: Three | undefined) {
-    if (three && three.controls.minDistance < three.camera.position.z * 0.9) {
-        three.camera.position.z *= 0.9;
-        three.camera.updateProjectionMatrix();
-
-        three.controls.update();
-    }
-}
-
-function zoomOut(three: Three | undefined) {
-    if (three && three.controls.maxDistance > three.camera.position.z * 1.1) {
-        three.camera.position.z *= 1.1;
-        three.camera.updateProjectionMatrix();
-        three.controls.update();
-    }
 }
 
 function FileGraph(props: GraphProps) {
@@ -61,7 +39,15 @@ function FileGraph(props: GraphProps) {
         setGraphViewState(GraphViewState.Ready);
         setSelectedNodeId(undefined);
         if (threeContainer && three && renderedNodes) {
-            autoFit(three, renderedNodes);
+            autoFit(
+                three,
+                renderedNodes.threeNodes
+                    .filter((node) => node.object)
+                    .map(
+                        (node) => node.object,
+                    ) as THREE.Object3D<THREE.Event>[],
+                renderedNodes.graphStyle,
+            );
         }
     };
 
@@ -75,7 +61,15 @@ function FileGraph(props: GraphProps) {
 
     useEffect(() => {
         if (three && renderedNodes) {
-            autoFit(three, renderedNodes);
+            autoFit(
+                three,
+                renderedNodes.threeNodes
+                    .filter((node) => node.object)
+                    .map(
+                        (node) => node.object,
+                    ) as THREE.Object3D<THREE.Event>[],
+                renderedNodes.graphStyle,
+            );
         }
     }, [props.view, renderedNodes, three]);
 
@@ -138,7 +132,15 @@ function FileGraph(props: GraphProps) {
 
     const fit = () => {
         if (three && renderedNodes) {
-            autoFit(three, renderedNodes);
+            autoFit(
+                three,
+                renderedNodes.threeNodes
+                    .filter((node) => node.object)
+                    .map(
+                        (node) => node.object,
+                    ) as THREE.Object3D<THREE.Event>[],
+                renderedNodes.graphStyle,
+            );
         }
     };
 

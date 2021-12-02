@@ -54,7 +54,7 @@ export function createTransactionMesh(
         tx.to
             ? tx.to.slice(0, 4) +
                   '...' +
-                  tx.from.slice(tx.from.length - 2, tx.from.length)
+                  tx.to.slice(tx.to.length - 2, tx.to.length)
             : '0x0',
         font,
         TextMaterial,

@@ -18,35 +18,13 @@ import { ContractDefinition } from '@solidity-parser/parser/dist/src/ast-types';
 import ContractNode from './ContractNode';
 import ContractView from './ContractView';
 import { Context } from '../../lib/Graph';
+import { zoomIn, zoomOut } from '../utils/Zoom';
+import { GraphViewState } from './GraphContainer';
 
 interface GraphProps {
     view: string;
     setView: (view: string) => void;
     contractsDag: DAG<Context<ParsedSolFile, ContractDefinition>>;
-}
-
-export enum GraphViewState {
-    Wait,
-    Ready,
-    NodeSelected,
-    NodeMaxed,
-}
-
-function zoomIn(three: Three | undefined) {
-    if (three && three.controls.minDistance < three.camera.position.z * 0.9) {
-        three.camera.position.z *= 0.9;
-        three.camera.updateProjectionMatrix();
-
-        three.controls.update();
-    }
-}
-
-function zoomOut(three: Three | undefined) {
-    if (three && three.controls.maxDistance > three.camera.position.z * 1.1) {
-        three.camera.position.z *= 1.1;
-        three.camera.updateProjectionMatrix();
-        three.controls.update();
-    }
 }
 
 function ContractGraph(props: GraphProps) {
@@ -63,7 +41,15 @@ function ContractGraph(props: GraphProps) {
         setGraphViewState(GraphViewState.Ready);
         setSelectedNodeId(undefined);
         if (threeContainer && three && renderedNodes) {
-            autoFit(three, renderedNodes);
+            autoFit(
+                three,
+                renderedNodes.threeNodes
+                    .filter((node) => node.object)
+                    .map(
+                        (node) => node.object,
+                    ) as THREE.Object3D<THREE.Event>[],
+                renderedNodes.graphStyle,
+            );
         }
     };
 
@@ -77,7 +63,15 @@ function ContractGraph(props: GraphProps) {
 
     useEffect(() => {
         if (three && renderedNodes) {
-            autoFit(three, renderedNodes);
+            autoFit(
+                three,
+                renderedNodes.threeNodes
+                    .filter((node) => node.object)
+                    .map(
+                        (node) => node.object,
+                    ) as THREE.Object3D<THREE.Event>[],
+                renderedNodes.graphStyle,
+            );
         }
     }, [props.view, renderedNodes, three]);
 
@@ -140,7 +134,15 @@ function ContractGraph(props: GraphProps) {
 
     const fit = () => {
         if (three && renderedNodes) {
-            autoFit(three, renderedNodes);
+            autoFit(
+                three,
+                renderedNodes.threeNodes
+                    .filter((node) => node.object)
+                    .map(
+                        (node) => node.object,
+                    ) as THREE.Object3D<THREE.Event>[],
+                renderedNodes.graphStyle,
+            );
         }
     };
     return (
