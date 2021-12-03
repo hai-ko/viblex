@@ -31,3 +31,8 @@ export const BlockPlaneMaterial = new THREE.MeshBasicMaterial({
     color: 0x000f28,
     side: THREE.DoubleSide,
 });
+
+export const SelectedTransactionMaterial = new THREE.MeshBasicMaterial({
+    color: 0x3d1111,
+    side: THREE.DoubleSide,
+});
