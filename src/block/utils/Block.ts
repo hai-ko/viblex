@@ -6,6 +6,7 @@ import { ThreeEnv } from './ThreeEnv';
 import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
 import { FrameMaterial, TextMaterial } from './Materials';
 import { CubeGeometry, CUBE_LENGTH } from './Geometries';
+import { scaleToNormal } from './Shared';
 
 const CHAIN_START_X_SHIFT = -800;
 const INITIAL_BLOCK_PART_SCALE = 0.1;
@@ -25,20 +26,6 @@ function vanishTransparency(material: THREE.MeshBasicMaterial) {
         .onComplete(() => {
             material.transparent = false;
         });
-}
-
-function scaleToNormal(group: THREE.Group) {
-    new TWEEN.Tween(group.scale)
-        .to(
-            {
-                x: 1,
-                y: 1,
-                z: 1,
-            },
-            2000,
-        )
-
-        .start();
 }
 
 function moveOldChainPart(

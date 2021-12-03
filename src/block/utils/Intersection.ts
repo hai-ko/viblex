@@ -3,8 +3,9 @@ import * as THREE from 'three';
 import { Object3D } from 'three';
 import { createFullBlock } from './FullBlock';
 import { CubeMaterial, FrameMaterial, SelectedCubeMaterial } from './Materials';
-import { createFrame } from './SharedObjects';
+import { createFrame } from './Shared';
 import { ThreeEnv } from './ThreeEnv';
+import { createTransactionMesh } from './Transaction';
 
 export function onClick(
     threeEnv: ThreeEnv | undefined,
@@ -108,30 +109,42 @@ function transactionSelected(
         transaction: ethers.providers.TransactionResponse,
     ) => void,
 ) {
-    if (threeEnv.selectedTransaction) {
-        threeEnv.selectedTransaction.parent?.remove(
-            threeEnv.selectedTransaction.userData.transactionFrame,
+    if (selectedElement.object.parent) {
+        const tx = selectedElement.object.userData
+            .transaction as ethers.providers.TransactionResponse;
+        if (threeEnv.selectedTransaction) {
+            threeEnv.selectedTransaction.parent?.remove(
+                threeEnv.selectedTransaction.userData.transactionFrame,
+            );
+            threeEnv.selectedTransaction.parent?.remove(
+                threeEnv.selectedTransaction.userData.selectedTxView,
+            );
+        }
+
+        const size: number = (selectedElement.object as any).geometry.parameters
+            .width;
+
+        const transactionFrame = createFrame(
+            selectedElement.object.position,
+            size + 7,
+            size + 7,
+            FrameMaterial,
         );
+        selectedElement.object.parent?.add(transactionFrame);
+        selectedElement.object.userData.transactionFrame = transactionFrame;
+
+        const selectedTxView = createTransactionMesh(
+            threeEnv.fonts[0],
+            selectedElement.object.parent,
+            tx,
+        );
+        selectedElement.object.parent?.add(selectedTxView);
+        selectedElement.object.userData.selectedTxView = selectedTxView;
+
+        threeEnv.selectedTransaction = selectedElement.object;
+
+        selectTransaction(tx);
     }
-
-    const size: number = (selectedElement.object as any).geometry.parameters
-        .width;
-    const transactionFrame = createFrame(
-        selectedElement.object.position,
-        size + 7,
-        size + 7,
-        FrameMaterial,
-    );
-
-    selectedElement.object.parent?.add(transactionFrame);
-    selectedElement.object.userData.transactionFrame = transactionFrame;
-
-    threeEnv.selectedTransaction = selectedElement.object;
-
-    selectTransaction(
-        selectedElement.object.userData
-            .transaction as ethers.providers.TransactionResponse,
-    );
 }
 
 function sortIntersections(a: any, b: any) {
