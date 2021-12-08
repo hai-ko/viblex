@@ -6,11 +6,11 @@ import { ThreeEnv } from './ThreeEnv';
 import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
 import { FrameMaterial, TextMaterial } from './Materials';
 import { CubeGeometry, CUBE_LENGTH } from './Geometries';
-import { scaleToNormal } from './Shared';
+import { scaleTo } from './Shared';
 
 const CHAIN_START_X_SHIFT = -800;
 const INITIAL_BLOCK_PART_SCALE = 0.1;
-const TIME_DISTANCE_OFFSET = 30;
+const TIME_DISTANCE_OFFSET = 100;
 const SEC_DISTANCE = 10;
 export const MAX_GAS_USED = 31000000;
 export const MIN_GAS_USED = 0;
@@ -105,7 +105,7 @@ export function createBlocks(
         startX = createBlock(
             startX,
             currentBlock,
-            300 * gasUsedRelation,
+            200 * gasUsedRelation,
             timeDiff,
             blockGroup,
             i !== 0,
@@ -165,7 +165,7 @@ export function createBlocks(
             threeEnv.blockchainGroup = newBG;
         });
         if (blockBatchs.length > 1) {
-            scaleToNormal(blockGroup);
+            scaleTo(1, blockGroup);
         }
     });
 }
@@ -182,7 +182,7 @@ function createBlock(
     font: THREE.Font,
 ): number {
     const fontSize = 20;
-    const scale = (100 + flexSize) / CUBE_LENGTH;
+    const scale = (300 + flexSize) / CUBE_LENGTH;
 
     const cube = new THREE.Mesh(CubeGeometry, cubeMaterial);
     cube.userData.block = block;
@@ -262,7 +262,7 @@ export function createFramgeSegments(
     cubePosition: THREE.Vector3,
     group: THREE.Group,
 ) {
-    const frameThickness = 3;
+    const frameThickness = 5;
 
     const frame1 = new THREE.Mesh(
         new THREE.BoxGeometry(

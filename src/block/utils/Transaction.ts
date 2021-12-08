@@ -12,7 +12,7 @@ import {
     LinkMaterial,
     TextMaterial,
 } from './Materials';
-import { scaleToNormal } from './Shared';
+import { scaleTo } from './Shared';
 
 function createText(
     text: string,
@@ -111,12 +111,12 @@ export function createTransactionMesh(
     bBox.getSize(size);
 
     txMeshGroup.position.set(
-        parent.position.x - parentSize.x / 2 - size.x / 2 - 200,
+        parent.position.x - parentSize.x / 2 - (size.x / 2) * 2 - 200,
         1350,
         parent.position.z,
     );
     txMeshGroup.scale.set(0.01, 0.01, 0.01);
-    scaleToNormal(txMeshGroup, 1000);
+    scaleTo(2, txMeshGroup, 1000);
 
     return txMeshGroup;
 }
