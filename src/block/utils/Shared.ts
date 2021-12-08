@@ -2,13 +2,13 @@ import * as THREE from 'three';
 // @ts-ignore
 import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
 
-export function scaleToNormal(group: THREE.Group, time?: number) {
+export function scaleTo(scale: number, group: THREE.Group, time?: number) {
     new TWEEN.Tween(group.scale)
         .to(
             {
-                x: 1,
-                y: 1,
-                z: 1,
+                x: scale,
+                y: scale,
+                z: scale,
             },
             time ? time : 2000,
         )
