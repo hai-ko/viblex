@@ -165,7 +165,7 @@ export function createBlocks(
             threeEnv.blockchainGroup = newBG;
         });
         if (blockBatchs.length > 1) {
-            scaleTo(1, blockGroup);
+            scaleTo(new THREE.Vector3(1, 1, 1), blockGroup);
         }
     });
 }

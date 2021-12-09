@@ -2,16 +2,13 @@ import * as THREE from 'three';
 // @ts-ignore
 import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
 
-export function scaleTo(scale: number, group: THREE.Group, time?: number) {
-    new TWEEN.Tween(group.scale)
-        .to(
-            {
-                x: scale,
-                y: scale,
-                z: scale,
-            },
-            time ? time : 2000,
-        )
+export function scaleTo(
+    scale: THREE.Vector3,
+    objectToScale: THREE.Group | THREE.Mesh,
+    time?: number,
+) {
+    new TWEEN.Tween(objectToScale.scale)
+        .to(scale, time ? time : 2000)
 
         .start();
 }

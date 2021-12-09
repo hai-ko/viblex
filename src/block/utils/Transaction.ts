@@ -116,7 +116,7 @@ export function createTransactionMesh(
         parent.position.z,
     );
     txMeshGroup.scale.set(0.01, 0.01, 0.01);
-    scaleTo(2, txMeshGroup, 1000);
+    scaleTo(new THREE.Vector3(2, 2, 2), txMeshGroup, 1000);
 
     return txMeshGroup;
 }
