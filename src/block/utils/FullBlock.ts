@@ -3,8 +3,7 @@ import * as THREE from 'three';
 import { Vector3 } from 'three';
 // @ts-ignore
 import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
-import { TxPlaneGeometry } from './Geometries';
-import { LinkMaterial } from './Materials';
+import { TxPlaneGeometry, TxValueGeometry } from './Geometries';
 
 export async function moveMesh(
     mesh: THREE.Mesh,
@@ -98,18 +97,22 @@ async function createTxPlane(
     );
     const maxDataSize = Math.max(...dataSize);
 
+    const ethValue = blockWithTransactions.transactions.map((tx) =>
+        parseFloat(ethers.utils.formatEther(tx.value)),
+    );
+    const maxEthValue = Math.max(...ethValue);
+
     for (let i = 0; i < block.transactions.length; i++) {
         const tx = blockWithTransactions.transactions[i];
 
-        const plane = new THREE.Mesh(
-            TxPlaneGeometry,
-            new THREE.MeshBasicMaterial({
-                color: 0x007f1b,
-                side: THREE.DoubleSide,
-                transparent: true,
-                opacity: 0.5 + 0.5 * (tx.data.length / maxDataSize),
-            }),
-        );
+        const txMaterial = new THREE.MeshBasicMaterial({
+            color: 0x007f1b,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.5 + 0.5 * (tx.data.length / maxDataSize),
+        });
+
+        const plane = new THREE.Mesh(TxPlaneGeometry, txMaterial);
         plane.userData.transaction = tx;
         plane.position.setX(startX + distance * i);
         plane.rotateY(Math.PI / 2);
@@ -123,11 +126,29 @@ async function createTxPlane(
             txPerRow * 50 -
             Math.floor(i / txPerRow) * 50 -
             ((txPerRow - 1) * 50) / 2;
-        moveMesh(
-            plane,
-            new Vector3(farX, farY, 0),
-            Math.random() * 1000 + 1000,
-        );
+
+        const wait = Math.random() * 1000 + 1000;
+
+        moveMesh(plane, new Vector3(farX, farY, 0), wait);
         rotateMesh(plane, 500);
+
+        const ethValue = parseFloat(ethers.utils.formatEther(tx.value));
+
+        if (ethValue > 0) {
+            setTimeout(() => {
+                const valueBoxHeight = (ethValue / maxEthValue) * 400 + 5;
+                const valueBox = new THREE.Mesh(TxValueGeometry, txMaterial);
+                valueBox.position.set(farX, farY, 0);
+
+                new TWEEN.Tween(valueBox.scale)
+                    .to(new Vector3(1, 1, valueBoxHeight), 1000)
+                    .onUpdate(() => {
+                        valueBox.position.set(farX, farY, valueBox.scale.z / 2);
+                    })
+                    .start();
+
+                fullBlockGroup.add(valueBox);
+            }, wait);
+        }
     }
 }
