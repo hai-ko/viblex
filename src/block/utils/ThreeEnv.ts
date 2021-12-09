@@ -1,6 +1,14 @@
 import { PerspectiveCamera } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
+import { CopyShader } from 'three/examples/jsm/shaders/CopyShader';
+import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader';
+import { LuminosityHighPassShader } from 'three/examples/jsm/shaders/LuminosityHighPassShader';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
+
 import * as THREE from 'three';
 
 export interface ThreeEnv {
@@ -14,6 +22,7 @@ export interface ThreeEnv {
     selectedBlock?: THREE.Object3D;
     selectedTransaction?: THREE.Object3D;
     fonts: THREE.Font[];
+    composer: EffectComposer;
 }
 
 interface ParticlesData {
@@ -67,7 +76,7 @@ async function createThree(width: number, height: number): Promise<ThreeEnv> {
 
     const scene = new THREE.Scene();
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(width, height);
     renderer.outputEncoding = THREE.sRGBEncoding;
@@ -81,6 +90,30 @@ async function createThree(width: number, height: number): Promise<ThreeEnv> {
     scene.add(ethNodesGroup);
     scene.add(blockchainGroup);
 
+    const renderScene = new RenderPass(scene, camera);
+
+    const effectFXAA = new ShaderPass(FXAAShader);
+    effectFXAA.uniforms.resolution.value.set(1 / width, 1 / height);
+
+    const bloomPass = new UnrealBloomPass(
+        new THREE.Vector2(window.innerWidth, window.innerHeight),
+        1.5,
+        0.4,
+        0.85,
+    );
+    bloomPass.threshold = 0.1;
+    bloomPass.strength = 1.2;
+    bloomPass.radius = 0.55;
+    bloomPass.renderToScreen = true;
+
+    const composer = new EffectComposer(renderer);
+    composer.setSize(window.innerWidth, window.innerHeight);
+
+    composer.addPass(renderScene);
+
+    composer.addPass(bloomPass);
+    composer.addPass(effectFXAA);
+
     return {
         camera,
         renderer,
@@ -90,6 +123,7 @@ async function createThree(width: number, height: number): Promise<ThreeEnv> {
         cloudGroups: [],
         blockchainGroup,
         fonts: [await loadFont('js/droid_sans_mono_regular.typeface.json')],
+        composer,
     };
 }
 
@@ -114,6 +148,14 @@ function render(threeEnv: ThreeEnv) {
             (group) => (group.rotation.y = time * 0.01),
         );
 
+        threeEnv.renderer.autoClear = false;
+        threeEnv.renderer.clear();
+
+        threeEnv.camera.layers.set(1);
+        threeEnv.composer.render();
+
+        threeEnv.renderer.clearDepth();
+        threeEnv.camera.layers.set(0);
         threeEnv.renderer.render(threeEnv.scene, threeEnv.camera);
     }
 }
@@ -296,6 +338,7 @@ function createCloud(
         cloudSettings.position.y,
         cloudSettings.position.z,
     );
+    pointCloud.layers.enable(1);
     group.add(pointCloud);
 
     const geometry = new THREE.BufferGeometry();

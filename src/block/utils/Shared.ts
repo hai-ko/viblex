@@ -30,6 +30,7 @@ export function createFrame(
         material,
     );
     frame1.position.set(0, height / 2, 0);
+    frame1.layers.enable(1);
 
     frameGroup.add(frame1);
 
@@ -38,7 +39,7 @@ export function createFrame(
         material,
     );
     frame2.position.set(0, -height / 2, 0);
-
+    frame2.layers.enable(1);
     frameGroup.add(frame2);
 
     const frame3 = new THREE.Mesh(
@@ -50,7 +51,7 @@ export function createFrame(
         material,
     );
     frame3.position.set(height / 2, 0, 0);
-
+    frame3.layers.enable(1);
     frameGroup.add(frame3);
 
     const frame4 = new THREE.Mesh(
@@ -62,7 +63,7 @@ export function createFrame(
         material,
     );
     frame4.position.set(-height / 2, 0, 0);
-
+    frame4.layers.enable(1);
     frameGroup.add(frame4);
 
     frameGroup.position.set(position.x, position.y, position.z);
