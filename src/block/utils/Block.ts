@@ -277,7 +277,7 @@ export function createFramgeSegments(
         cubePosition.y - length / 2,
         cubePosition.z - length / 2,
     );
-
+    frame1.layers.enable(1);
     group.add(frame1);
 
     const frame2 = new THREE.Mesh(
@@ -293,7 +293,7 @@ export function createFramgeSegments(
         cubePosition.y - length / 2,
         cubePosition.z + length / 2,
     );
-
+    frame2.layers.enable(1);
     group.add(frame2);
 
     const frame3 = new THREE.Mesh(
@@ -309,7 +309,7 @@ export function createFramgeSegments(
         cubePosition.y + length / 2,
         cubePosition.z + length / 2,
     );
-
+    frame3.layers.enable(1);
     group.add(frame3);
 
     const frame4 = new THREE.Mesh(
@@ -325,7 +325,7 @@ export function createFramgeSegments(
         cubePosition.y + length / 2,
         cubePosition.z - length / 2,
     );
-
+    frame4.layers.enable(1);
     group.add(frame4);
 
     const frame5 = new THREE.Mesh(
@@ -341,7 +341,7 @@ export function createFramgeSegments(
         cubePosition.y + length / 2,
         cubePosition.z,
     );
-
+    frame5.layers.enable(1);
     group.add(frame5);
 
     const frame6 = new THREE.Mesh(
@@ -357,7 +357,7 @@ export function createFramgeSegments(
         cubePosition.y + length / 2,
         cubePosition.z,
     );
-
+    frame6.layers.enable(1);
     group.add(frame6);
 
     const frame7 = new THREE.Mesh(
@@ -373,7 +373,7 @@ export function createFramgeSegments(
         cubePosition.y - length / 2,
         cubePosition.z,
     );
-
+    frame7.layers.enable(1);
     group.add(frame7);
 
     const frame8 = new THREE.Mesh(
@@ -389,7 +389,7 @@ export function createFramgeSegments(
         cubePosition.y - length / 2,
         cubePosition.z,
     );
-
+    frame8.layers.enable(1);
     group.add(frame8);
 
     const frame9 = new THREE.Mesh(
@@ -405,7 +405,7 @@ export function createFramgeSegments(
         cubePosition.y,
         cubePosition.z - length / 2,
     );
-
+    frame9.layers.enable(1);
     group.add(frame9);
 
     const frame10 = new THREE.Mesh(
@@ -421,7 +421,7 @@ export function createFramgeSegments(
         cubePosition.y,
         cubePosition.z + length / 2,
     );
-
+    frame10.layers.enable(1);
     group.add(frame10);
 
     const frame11 = new THREE.Mesh(
@@ -437,7 +437,7 @@ export function createFramgeSegments(
         cubePosition.y,
         cubePosition.z - length / 2,
     );
-
+    frame11.layers.enable(1);
     group.add(frame11);
 
     const frame12 = new THREE.Mesh(
@@ -453,6 +453,6 @@ export function createFramgeSegments(
         cubePosition.y,
         cubePosition.z + length / 2,
     );
-
+    frame12.layers.enable(1);
     group.add(frame12);
 }
