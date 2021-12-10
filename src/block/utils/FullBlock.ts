@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { Vector3 } from 'three';
 // @ts-ignore
 import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
-import { TxPlaneGeometry, TxValueGeometry } from './Geometries';
+import { ThreeEnv } from './ThreeEnv';
 
 export async function moveMesh(
     mesh: THREE.Mesh,
@@ -64,11 +64,12 @@ export function createFullBlock(
     block: ethers.providers.Block,
     scale: THREE.Vector3,
     ethProvider: ethers.providers.Web3Provider,
+    threeEnv: ThreeEnv,
 ): THREE.Group {
     const fullBlockGroup = new THREE.Group();
     fullBlockGroup.scale.set(1 / scale.x, 1 / scale.y, 1 / scale.z);
 
-    createTxPlane(block, fullBlockGroup, ethProvider);
+    createTxPlane(block, fullBlockGroup, ethProvider, threeEnv);
 
     return fullBlockGroup;
 }
@@ -76,8 +77,8 @@ export function createFullBlock(
 async function createTxPlane(
     block: ethers.providers.Block,
     fullBlockGroup: THREE.Object3D,
-
     ethProvider: ethers.providers.Web3Provider,
+    threeEnv: ThreeEnv,
 ) {
     const distance = 180 / block.transactions.length;
     const startX = -90;
@@ -112,7 +113,7 @@ async function createTxPlane(
             opacity: 0.5 + 0.5 * (tx.data.length / maxDataSize),
         });
 
-        const plane = new THREE.Mesh(TxPlaneGeometry, txMaterial);
+        const plane = new THREE.Mesh(threeEnv.geometries.TxPlane, txMaterial);
         plane.userData.transaction = tx;
         plane.position.setX(startX + distance * i);
         plane.rotateY(Math.PI / 2);
@@ -137,7 +138,10 @@ async function createTxPlane(
         if (ethValue > 0) {
             setTimeout(() => {
                 const valueBoxHeight = (ethValue / maxEthValue) * 400 + 5;
-                const valueBox = new THREE.Mesh(TxValueGeometry, txMaterial);
+                const valueBox = new THREE.Mesh(
+                    threeEnv.geometries.TxValue,
+                    txMaterial,
+                );
                 valueBox.position.set(farX, farY, 0);
 
                 new TWEEN.Tween(valueBox.scale)

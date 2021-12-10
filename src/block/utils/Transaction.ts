@@ -3,9 +3,7 @@ import * as THREE from 'three';
 import {
     ACCOUNT_DISTNCE,
     ACCOUNT_PLANE_LENGT,
-    ArrowHeadGeometry,
     ARROW_HEAD_SIZE,
-    SelectedTxPlaneGeometry,
 } from './Geometries';
 import {
     SelectedTransactionMaterial,
@@ -13,6 +11,7 @@ import {
     TextMaterial,
 } from './Materials';
 import { scaleTo } from './Shared';
+import { ThreeEnv } from './ThreeEnv';
 
 function createText(
     text: string,
@@ -36,6 +35,7 @@ export function createTransactionMesh(
     font: THREE.Font,
     parent: THREE.Object3D<THREE.Event>,
     tx: ethers.providers.TransactionResponse,
+    threeEnv: ThreeEnv,
 ): THREE.Group {
     const parnentBBox = new THREE.Box3().setFromObject(parent);
     const parentSize = new THREE.Vector3();
@@ -44,10 +44,10 @@ export function createTransactionMesh(
     const txMeshGroup = new THREE.Group();
 
     const toPlane = new THREE.Mesh(
-        SelectedTxPlaneGeometry,
+        threeEnv.geometries.SelectedTxPlane,
         SelectedTransactionMaterial,
     );
-    toPlane.position.set(ACCOUNT_DISTNCE / 2 + ACCOUNT_PLANE_LENGT / 2, 0, 0);
+    toPlane.position.set(ACCOUNT_DISTNCE / 2 + ACCOUNT_PLANE_LENGT / 2, 0, -2);
     txMeshGroup.add(toPlane);
 
     const toText = createText(
@@ -62,7 +62,10 @@ export function createTransactionMesh(
     toText.mesh.position.set(ACCOUNT_DISTNCE / 2 + 15, -toText.size.y / 2, -1);
     txMeshGroup.add(toText.mesh);
 
-    const arrowHead = new THREE.Mesh(ArrowHeadGeometry, LinkMaterial);
+    const arrowHead = new THREE.Mesh(
+        threeEnv.geometries.ArrowHead,
+        LinkMaterial,
+    );
     arrowHead.position.set(ACCOUNT_DISTNCE / 2 - 50, 0, -1);
     arrowHead.rotateY(Math.PI / 2);
     arrowHead.rotateZ(Math.PI / 2);
@@ -82,13 +85,13 @@ export function createTransactionMesh(
     txMeshGroup.add(valueText.mesh);
 
     const fromPlane = new THREE.Mesh(
-        SelectedTxPlaneGeometry,
+        threeEnv.geometries.SelectedTxPlane,
         SelectedTransactionMaterial,
     );
     fromPlane.position.set(
         valueText.mesh.position.x - ACCOUNT_PLANE_LENGT / 2 - 30,
         0,
-        0,
+        -2,
     );
     txMeshGroup.add(fromPlane);
 

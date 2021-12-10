@@ -1,15 +1,13 @@
 import { PerspectiveCamera } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
-import { CopyShader } from 'three/examples/jsm/shaders/CopyShader';
 import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader';
-import { LuminosityHighPassShader } from 'three/examples/jsm/shaders/LuminosityHighPassShader';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
 
 import * as THREE from 'three';
+import { Geometries, GeometriesRecords } from './Geometries';
 
 export interface ThreeEnv {
     camera: PerspectiveCamera;
@@ -23,6 +21,16 @@ export interface ThreeEnv {
     selectedTransaction?: THREE.Object3D;
     fonts: THREE.Font[];
     composer: EffectComposer;
+    geometries: GeometriesRecords;
+    blockObjects: {
+        block: THREE.Group;
+        link:
+            | THREE.Mesh<
+                  THREE.BufferGeometry,
+                  THREE.Material | THREE.Material[]
+              >
+            | undefined;
+    }[];
 }
 
 interface ParticlesData {
@@ -114,6 +122,8 @@ async function createThree(width: number, height: number): Promise<ThreeEnv> {
     composer.addPass(bloomPass);
     composer.addPass(effectFXAA);
 
+    setInterval(() => console.log(renderer.info), 10000);
+
     return {
         camera,
         renderer,
@@ -124,6 +134,8 @@ async function createThree(width: number, height: number): Promise<ThreeEnv> {
         blockchainGroup,
         fonts: [await loadFont('js/droid_sans_mono_regular.typeface.json')],
         composer,
+        geometries: Geometries,
+        blockObjects: [],
     };
 }
 
@@ -300,7 +312,6 @@ function createCloud(
         sizeAttenuation: cloudSettings.sizeAttenuation,
     });
 
-    const nodeParticles = new THREE.BufferGeometry();
     const nodesParticlePositions = new Float32Array(maxNodeParticleCount * 3);
 
     for (let i = 0; i < maxNodeParticleCount; i++) {
@@ -322,7 +333,7 @@ function createCloud(
             numConnections: 0,
         });
     }
-
+    const nodeParticles = new THREE.BufferGeometry();
     nodeParticles.setDrawRange(0, cloudSettings.particleCount);
     nodeParticles.setAttribute(
         'position',

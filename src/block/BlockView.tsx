@@ -3,7 +3,7 @@ import Menu from '../shared/Menu';
 import { init, onWindowResize, ThreeEnv } from './utils/ThreeEnv';
 import detectEthereumProvider from '@metamask/detect-provider';
 import { ethers } from 'ethers';
-import { createBlocks } from './utils/Block';
+import { BLOCKS_TO_SHOW, createBlocks } from './utils/Block';
 import { onClick } from './utils/Intersection';
 import InfoBoxView from './InfoBoxView';
 import { CubeMaterial } from './utils/Materials';
@@ -48,7 +48,7 @@ async function getBlocks(
     >,
 ) {
     const currentBlockNumber = await ethProvider.getBlockNumber();
-    let blocksToLoad = 50;
+    let blocksToLoad = BLOCKS_TO_SHOW;
 
     if (loadedBlocks.length > 0) {
         const lastBlock = loadedBlocks[loadedBlocks.length - 1][0];
@@ -62,7 +62,9 @@ async function getBlocks(
             ...Array(blocksToLoad).keys(),
         ].map((index) => ethProvider.getBlock(currentBlockNumber - index));
 
-        newLoadedBlocks = [...loadedBlocks, [...(await Promise.all(blocks))]];
+        newLoadedBlocks = loadedBlocks[loadedBlocks.length - 1]
+            ? [loadedBlocks[loadedBlocks.length - 1], await Promise.all(blocks)]
+            : [await Promise.all(blocks)];
 
         setBlocks(newLoadedBlocks);
     }
