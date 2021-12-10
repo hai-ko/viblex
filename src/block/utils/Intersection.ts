@@ -93,6 +93,7 @@ function blockSelected(
             selectedElement.object.userData.block,
             (selectedElement.object.parent as Object3D).scale,
             ethProvider,
+            threeEnv,
         );
         (selectedElement.object.parent as Object3D).add(fullBlockGroup);
         selectedElement.object.userData.fullBlock = fullBlockGroup;
@@ -137,6 +138,7 @@ function transactionSelected(
             threeEnv.fonts[0],
             selectedElement.object.parent,
             tx,
+            threeEnv,
         );
         selectedElement.object.parent?.add(selectedTxView);
         selectedElement.object.userData.selectedTxView = selectedTxView;
