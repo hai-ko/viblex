@@ -12,6 +12,8 @@ import { getAllRemixFiles } from './remix-utils/RemixFileHandler';
 import GraphContainer from './graph/views/GraphContainer';
 import BlockView from './block/BlockView';
 import TransactionSequenceView from './graph/views/TransactionSequenceView';
+import { Routes, Route, Link } from 'react-router-dom';
+import StandaloneWrapper from './StandaloneWrapper';
 
 function App() {
     const [client, setClient] = useState<
@@ -67,10 +69,20 @@ function App() {
         }
     };
 
-    return (
+    const remixView = (
         <div className="App h-100 w-100" ref={graphContainer}>
             {getSelectedView()}
         </div>
+    );
+
+    return (
+        <Routes>
+            <Route path="/remix" element={remixView} />
+            <Route
+                path="/"
+                element={<StandaloneWrapper element={<BlockView />} />}
+            />
+        </Routes>
     );
 }
 

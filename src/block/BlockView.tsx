@@ -11,8 +11,8 @@ import { Object3D } from 'three';
 import PageVisibility from 'react-page-visibility';
 
 interface BlockViewProps {
-    view: string;
-    setView: (view: string) => void;
+    view?: string;
+    setView?: (view: string) => void;
 }
 
 export enum BlockViewState {

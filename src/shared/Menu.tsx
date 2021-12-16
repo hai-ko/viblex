@@ -7,8 +7,8 @@ interface MenuProps {
     zoomIn?: () => void;
     zoomOut?: () => void;
     autoZoom?: () => void;
-    setView: (vieName: string) => void;
-    defaultView: string;
+    setView?: (vieName: string) => void;
+    defaultView?: string;
     infoBox?: JSX.Element;
 }
 
@@ -16,10 +16,12 @@ function Menu(props: MenuProps) {
     return (
         <div className="menu d-flex justify-content-start w-100">
             <div className=" d-flex align-items-end w-100">
-                <ViewSelect
-                    setView={props.setView}
-                    defaultView={props.defaultView}
-                />
+                {props.defaultView && props.setView && (
+                    <ViewSelect
+                        setView={props.setView}
+                        defaultView={props.defaultView}
+                    />
+                )}
 
                 {props.zoomIn && (
                     <button

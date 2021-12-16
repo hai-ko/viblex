@@ -5,6 +5,9 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
 import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
+import Stats from 'three/examples/jsm/libs/stats.module.js';
+// @ts-ignore
+import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
 
 import * as THREE from 'three';
 import { Geometries, GeometriesRecords } from './Geometries';
@@ -22,6 +25,7 @@ export interface ThreeEnv {
     fonts: THREE.Font[];
     composer: EffectComposer;
     geometries: GeometriesRecords;
+    stats?: Stats;
     blockObjects: {
         block: THREE.Group;
         link:
@@ -30,6 +34,7 @@ export interface ThreeEnv {
                   THREE.Material | THREE.Material[]
               >
             | undefined;
+        textGeometry: THREE.TextGeometry;
     }[];
 }
 
@@ -101,10 +106,13 @@ async function createThree(width: number, height: number): Promise<ThreeEnv> {
     const renderScene = new RenderPass(scene, camera);
 
     const effectFXAA = new ShaderPass(FXAAShader);
-    effectFXAA.uniforms.resolution.value.set(1 / width, 1 / height);
+    effectFXAA.uniforms.resolution.value.set(
+        1 / (width * window.devicePixelRatio),
+        1 / (height * window.devicePixelRatio),
+    );
 
     const bloomPass = new UnrealBloomPass(
-        new THREE.Vector2(window.innerWidth, window.innerHeight),
+        new THREE.Vector2(width, height),
         1.5,
         0.4,
         0.85,
@@ -115,14 +123,14 @@ async function createThree(width: number, height: number): Promise<ThreeEnv> {
     bloomPass.renderToScreen = true;
 
     const composer = new EffectComposer(renderer);
-    composer.setSize(window.innerWidth, window.innerHeight);
+    composer.setSize(width, height);
 
     composer.addPass(renderScene);
 
     composer.addPass(bloomPass);
     composer.addPass(effectFXAA);
 
-    setInterval(() => console.log(renderer.info), 10000);
+    //setInterval(() => console.log(renderer.info), 10000);
 
     return {
         camera,
@@ -145,11 +153,13 @@ export function onWindowResize(
     setThree: React.Dispatch<React.SetStateAction<ThreeEnv | undefined>>,
 ) {
     if (threeContainer.current) {
+        console.log(threeContainer.current.clientWidth);
         const newWidth = threeContainer.current.clientWidth;
         const newHeight = threeContainer.current.clientHeight;
         three.renderer.setSize(newWidth, newHeight);
         three.camera.aspect = newWidth / newHeight;
         three.camera.updateProjectionMatrix();
+        three.composer.setSize(newWidth, newHeight);
     }
 }
 
@@ -159,7 +169,9 @@ function render(threeEnv: ThreeEnv) {
         threeEnv.cloudGroups.forEach(
             (group) => (group.rotation.y = time * 0.01),
         );
-
+        if (threeEnv.stats) {
+            threeEnv.stats.update();
+        }
         threeEnv.renderer.autoClear = false;
         threeEnv.renderer.clear();
 
@@ -172,7 +184,7 @@ function render(threeEnv: ThreeEnv) {
     }
 }
 
-function animateCloud(threeEnv: ThreeEnv, nodeData: CloudData) {
+function animateCloud(nodeData: CloudData) {
     let vertexpos = 0;
     let colorpos = 0;
     let numConnected = 0;
@@ -277,12 +289,14 @@ export function animate(
     txData: CloudData,
 ) {
     if (nodeData) {
-        animateCloud(threeEnv, nodeData);
+        animateCloud(nodeData);
     }
 
     if (txData) {
-        animateCloud(threeEnv, txData);
+        animateCloud(txData);
     }
+
+    TWEEN.update();
 
     requestAnimationFrame(() => animate(threeEnv, nodeData, txData));
 
@@ -401,6 +415,9 @@ export async function init(
     const width = (threeContainer.current as any).clientWidth;
     const threeEnv = await createThree(height, width);
     (threeContainer.current as any).appendChild(threeEnv.renderer.domElement);
+    const stats: any = Stats() as any;
+    (threeContainer.current as any).appendChild(stats.dom);
+    threeEnv.stats = stats;
 
     window.addEventListener(
         'resize',

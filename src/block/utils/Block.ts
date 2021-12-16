@@ -73,8 +73,8 @@ function removeBlocks(threeEnv: ThreeEnv, lastBlockNumber: number) {
         .filter((key) => parseInt(key) <= lastBlockNumber - BLOCKS_TO_SHOW)
         .forEach((key) => {
             threeEnv.blockObjects[parseInt(key)].block.removeFromParent();
-
             threeEnv.blockObjects[parseInt(key)].link?.removeFromParent();
+            threeEnv.blockObjects[parseInt(key)].textGeometry.dispose();
             delete threeEnv.blockObjects[parseInt(key)];
         });
 }
@@ -210,13 +210,13 @@ function createBlock(
         new THREE.Vector3(CUBE_LENGTH, CUBE_LENGTH, CUBE_LENGTH),
     );
 
-    const textGeo = new THREE.TextGeometry(`#${block.number}`, {
+    const textGeometry = new THREE.TextGeometry(`#${block.number}`, {
         font,
         height: 2,
         size: fontSize,
     });
 
-    const textMesh1 = new THREE.Mesh(textGeo, TextMaterial);
+    const textMesh1 = new THREE.Mesh(textGeometry, TextMaterial);
     textMesh1.geometry.computeBoundingBox();
     const textMeshSize = new THREE.Vector3();
     textMesh1.geometry.boundingBox?.getSize(textMeshSize);
@@ -262,7 +262,11 @@ function createBlock(
             blockChainGroup.add(link);
     }
 
-    threeEnv.blockObjects[block.number] = { block: blockGroup, link };
+    threeEnv.blockObjects[block.number] = {
+        block: blockGroup,
+        link,
+        textGeometry,
+    };
 
     return nextStartX;
 }
