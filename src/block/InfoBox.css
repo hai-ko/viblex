@@ -19,7 +19,7 @@
 } 
 
 .etherscan-link {
-    color: rgba(255, 174, 52, 0.9);
+    color: rgba(255, 174, 52, 0.9) !important;
 }
 
 .row-space {

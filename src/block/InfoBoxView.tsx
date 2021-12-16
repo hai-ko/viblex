@@ -23,7 +23,7 @@ function InfoBoxView(props: InfoBoxViewProps) {
                     <div>
                         <button
                             type="button"
-                            className="btn btn-sm btn-primary menu-btn"
+                            className="btn btn-sm menu-btn"
                             onClick={props.maximize}
                         >
                             <Icon iconClass="fas fa-window-maximize" />
@@ -31,7 +31,7 @@ function InfoBoxView(props: InfoBoxViewProps) {
 
                         <button
                             type="button"
-                            className="btn btn-sm btn-primary menu-btn"
+                            className="btn btn-sm menu-btn "
                             onClick={props.unselect}
                         >
                             <Icon iconClass="fas fa-times" />
@@ -60,7 +60,7 @@ function InfoBoxView(props: InfoBoxViewProps) {
                             </div>
                             <div className="col-5 small text-right">
                                 <a
-                                    className=" btn btn-sm btn-primary menu-btn etherscan-link"
+                                    className=" btn btn-sm menu-btn etherscan-link"
                                     href={`https://etherscan.io/tx/${transaction.hash}`}
                                     target="_blan"
                                 >
@@ -69,7 +69,7 @@ function InfoBoxView(props: InfoBoxViewProps) {
 
                                 <button
                                     type="button"
-                                    className="btn btn-sm btn-primary menu-btn"
+                                    className="btn btn-sm menu-btn"
                                     onClick={props.minimize}
                                 >
                                     <Icon iconClass="fas fa-window-minimize" />
@@ -77,7 +77,7 @@ function InfoBoxView(props: InfoBoxViewProps) {
 
                                 <button
                                     type="button"
-                                    className="btn btn-sm btn-primary menu-btn"
+                                    className="btn btn-sm  menu-btn"
                                     onClick={props.unselect}
                                 >
                                     <Icon iconClass="fas fa-times" />
@@ -116,9 +116,9 @@ function InfoBoxView(props: InfoBoxViewProps) {
                             <div className="col-6">
                                 <strong>Block #{block.number}</strong>
                             </div>
-                            <div className="col-6 small text-right">
+                            <div className="col-6 small text-end">
                                 <a
-                                    className=" btn btn-sm btn-primary menu-btn etherscan-link"
+                                    className=" btn btn-sm menu-btn etherscan-link"
                                     href={`https://etherscan.io/block/${block.number}`}
                                     target="_blan"
                                 >
@@ -127,7 +127,7 @@ function InfoBoxView(props: InfoBoxViewProps) {
 
                                 <button
                                     type="button"
-                                    className="btn btn-sm btn-primary menu-btn"
+                                    className="btn btn-sm menu-btn"
                                     onClick={props.minimize}
                                 >
                                     <Icon iconClass="fas fa-window-minimize" />
@@ -135,7 +135,7 @@ function InfoBoxView(props: InfoBoxViewProps) {
 
                                 <button
                                     type="button"
-                                    className="btn btn-sm btn-primary menu-btn"
+                                    className="btn btn-sm menu-btn"
                                     onClick={props.unselect}
                                 >
                                     <Icon iconClass="fas fa-times" />

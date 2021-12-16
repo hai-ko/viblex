@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { Vector3 } from 'three';
 // @ts-ignore
 import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
+import { TxPlaneMaterial, TxValueMaterial } from './Materials';
 import { ThreeEnv } from './ThreeEnv';
 
 export async function moveMesh(
@@ -93,8 +94,8 @@ async function createTxPlane(
     );
     const maxGasLimit = Math.max(...txGasLimit);
 
-    const dataSize = blockWithTransactions.transactions.map(
-        (tx) => tx.data.length,
+    const dataSize = blockWithTransactions.transactions.map((tx) =>
+        tx.data.length > 2 ? tx.data.length - 2 : 0,
     );
     const maxDataSize = Math.max(...dataSize);
 
@@ -106,14 +107,17 @@ async function createTxPlane(
     for (let i = 0; i < block.transactions.length; i++) {
         const tx = blockWithTransactions.transactions[i];
 
-        const txMaterial = new THREE.MeshBasicMaterial({
-            color: 0x007f1b,
-            side: THREE.DoubleSide,
-            transparent: true,
-            opacity: 0.5 + 0.5 * (tx.data.length / maxDataSize),
-        });
+        // const txMaterial = new THREE.MeshBasicMaterial({
+        //     color: 0x007f1b,
+        //     side: THREE.DoubleSide,
+        //     transparent: true,
+        //     opacity: 0.5 + 0.5 * (tx.data.length / maxDataSize),
+        // });
 
-        const plane = new THREE.Mesh(threeEnv.geometries.TxPlane, txMaterial);
+        const plane = new THREE.Mesh(
+            threeEnv.geometries.TxPlane,
+            TxPlaneMaterial,
+        );
         plane.userData.transaction = tx;
         plane.position.setX(startX + distance * i);
         plane.rotateY(Math.PI / 2);
@@ -140,7 +144,7 @@ async function createTxPlane(
                 const valueBoxHeight = (ethValue / maxEthValue) * 400 + 5;
                 const valueBox = new THREE.Mesh(
                     threeEnv.geometries.TxValue,
-                    txMaterial,
+                    TxValueMaterial,
                 );
                 valueBox.position.set(farX, farY, 0);
 
