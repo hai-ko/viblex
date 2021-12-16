@@ -9,6 +9,8 @@ import InfoBoxView from './InfoBoxView';
 import { CubeMaterial } from './utils/Materials';
 import { Object3D } from 'three';
 import PageVisibility from 'react-page-visibility';
+import { useLocation } from 'react-router-dom';
+import queryString from 'query-string';
 
 interface BlockViewProps {
     view?: string;
@@ -25,22 +27,29 @@ export enum BlockViewState {
 
 async function createConnection(
     setProvider: React.Dispatch<
-        React.SetStateAction<ethers.providers.Web3Provider | undefined>
+        React.SetStateAction<ethers.providers.Provider | undefined>
     >,
+    rpc: string,
 ) {
-    const provider = await detectEthereumProvider();
-
-    if (provider) {
-        const ethersProvider = new ethers.providers.Web3Provider(
-            provider as any,
+    if (rpc) {
+        setProvider(
+            new ethers.providers.JsonRpcProvider(decodeURIComponent(rpc)),
         );
-        setProvider(ethersProvider);
+    } else {
+        const provider = await detectEthereumProvider();
+
+        if (provider) {
+            const ethersProvider = new ethers.providers.Web3Provider(
+                provider as any,
+            );
+            setProvider(ethersProvider);
+        }
     }
 }
 
 async function getBlocks(
     threeEnv: ThreeEnv,
-    ethProvider: ethers.providers.Web3Provider,
+    ethProvider: ethers.providers.Provider,
     loadedBlocks: ethers.providers.Block[][],
     setBlocks: React.Dispatch<React.SetStateAction<ethers.providers.Block[][]>>,
     setGetBlocksTimeout: React.Dispatch<
@@ -85,11 +94,13 @@ async function getBlocks(
 }
 
 function BlockView(props: BlockViewProps) {
+    const rpc = queryString.parse(useLocation().search).rpc as string;
+
     const [getBlocksTimeout, setGetBlocksTimeout] = useState<NodeJS.Timeout>();
     const threeContainer = useRef<HTMLDivElement>(null);
     const [threeEnv, setThreeEnv] = useState<ThreeEnv | undefined>();
     const [ethProvider, setEthProvider] = useState<
-        ethers.providers.Web3Provider | undefined
+        ethers.providers.Provider | undefined
     >();
     const [blocks, setBlocks] = useState<ethers.providers.Block[][]>([]);
     const [selectedElement, setSelectedElement] = useState<
@@ -167,7 +178,7 @@ function BlockView(props: BlockViewProps) {
 
     useEffect(() => {
         if (!ethProvider) {
-            createConnection(setEthProvider);
+            createConnection(setEthProvider, rpc);
         } else if (threeEnv && blocks.length === 0) {
             getBlocks(
                 threeEnv,

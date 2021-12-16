@@ -10,7 +10,7 @@ import { createTransactionMesh } from './Transaction';
 export function onClick(
     threeEnv: ThreeEnv | undefined,
     event: React.MouseEvent<HTMLDivElement, MouseEvent>,
-    ethProvider: ethers.providers.Web3Provider,
+    ethProvider: ethers.providers.Provider,
     selectBlock: (block: ethers.providers.Block) => void,
     selectTransaction: (
         transaction: ethers.providers.TransactionResponse,
@@ -66,7 +66,7 @@ export function onClick(
 function blockSelected(
     selectedElement: THREE.Intersection,
     threeEnv: ThreeEnv,
-    ethProvider: ethers.providers.Web3Provider,
+    ethProvider: ethers.providers.Provider,
     selectBlock: (block: ethers.providers.Block) => void,
 ) {
     if (

@@ -64,7 +64,7 @@ export async function scaleMesh(
 export function createFullBlock(
     block: ethers.providers.Block,
     scale: THREE.Vector3,
-    ethProvider: ethers.providers.Web3Provider,
+    ethProvider: ethers.providers.Provider,
     threeEnv: ThreeEnv,
 ): THREE.Group {
     const fullBlockGroup = new THREE.Group();
@@ -78,7 +78,7 @@ export function createFullBlock(
 async function createTxPlane(
     block: ethers.providers.Block,
     fullBlockGroup: THREE.Object3D,
-    ethProvider: ethers.providers.Web3Provider,
+    ethProvider: ethers.providers.Provider,
     threeEnv: ThreeEnv,
 ) {
     const distance = 180 / block.transactions.length;
