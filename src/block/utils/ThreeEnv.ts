@@ -153,7 +153,6 @@ export function onWindowResize(
     setThree: React.Dispatch<React.SetStateAction<ThreeEnv | undefined>>,
 ) {
     if (threeContainer.current) {
-        console.log(threeContainer.current.clientWidth);
         const newWidth = threeContainer.current.clientWidth;
         const newHeight = threeContainer.current.clientHeight;
         three.renderer.setSize(newWidth, newHeight);
