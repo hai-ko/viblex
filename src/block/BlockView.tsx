@@ -11,6 +11,7 @@ import { Object3D } from 'three';
 import PageVisibility from 'react-page-visibility';
 import { useLocation } from 'react-router-dom';
 import queryString from 'query-string';
+import MessageBoxView from './MessageBoxView';
 
 interface BlockViewProps {
     view?: string;
@@ -18,6 +19,8 @@ interface BlockViewProps {
 }
 
 export enum BlockViewState {
+    WaitForConnection,
+    NoConnection,
     NoSelection,
     BlockSelected,
     BlockSelectedMin,
@@ -29,12 +32,14 @@ async function createConnection(
     setProvider: React.Dispatch<
         React.SetStateAction<ethers.providers.Provider | undefined>
     >,
+    setBlockViewState: React.Dispatch<React.SetStateAction<BlockViewState>>,
     rpc: string,
 ) {
     if (rpc) {
         setProvider(
             new ethers.providers.JsonRpcProvider(decodeURIComponent(rpc)),
         );
+        setBlockViewState(BlockViewState.NoSelection);
     } else {
         const provider = await detectEthereumProvider();
 
@@ -43,6 +48,9 @@ async function createConnection(
                 provider as any,
             );
             setProvider(ethersProvider);
+            setBlockViewState(BlockViewState.NoSelection);
+        } else {
+            setBlockViewState(BlockViewState.NoConnection);
         }
     }
 }
@@ -109,7 +117,7 @@ function BlockView(props: BlockViewProps) {
         | undefined
     >();
     const [blockViewState, setBlockViewState] = useState<BlockViewState>(
-        BlockViewState.NoSelection,
+        BlockViewState.WaitForConnection,
     );
 
     const selectBlock = (block: ethers.providers.Block) => {
@@ -178,7 +186,7 @@ function BlockView(props: BlockViewProps) {
 
     useEffect(() => {
         if (!ethProvider) {
-            createConnection(setEthProvider, rpc);
+            createConnection(setEthProvider, setBlockViewState, rpc);
         } else if (threeEnv && blocks.length === 0) {
             getBlocks(
                 threeEnv,
@@ -235,6 +243,9 @@ function BlockView(props: BlockViewProps) {
                         );
                 }}
             >
+                {blockViewState === BlockViewState.NoConnection && (
+                    <MessageBoxView />
+                )}
                 <Menu
                     setView={props.setView}
                     defaultView={props.view}

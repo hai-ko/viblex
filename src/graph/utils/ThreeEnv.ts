@@ -40,6 +40,7 @@ function createThree(width: number, height: number): Three {
     camera.position.z = 4200;
 
     const scene = new THREE.Scene();
+    scene.background = null;
 
     const renderer = new CSS3DRenderer();
 
