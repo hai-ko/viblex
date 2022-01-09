@@ -5,7 +5,6 @@ import '../Block.css';
 interface TxInfoBoxViewProps {
     transaction: ethers.providers.TransactionResponse;
     minimize: () => void;
-    maximize: () => void;
     unselect: () => void;
 }
 

@@ -23,6 +23,7 @@ export enum BlockViewState {
     WaitForConnection,
     NoConnection,
     NoSelection,
+    HelpSelected,
     BlockSelected,
     BlockSelectedMin,
     TransactionSelected,
@@ -40,7 +41,7 @@ async function createConnection(
         setProvider(
             new ethers.providers.JsonRpcProvider(decodeURIComponent(rpc)),
         );
-        setBlockViewState(BlockViewState.NoSelection);
+        setBlockViewState(BlockViewState.HelpSelected);
     } else {
         const provider = await detectEthereumProvider();
 
@@ -49,7 +50,7 @@ async function createConnection(
                 provider as any,
             );
             setProvider(ethersProvider);
-            setBlockViewState(BlockViewState.NoSelection);
+            setBlockViewState(BlockViewState.HelpSelected);
         } else {
             setBlockViewState(BlockViewState.NoConnection);
         }
@@ -154,14 +155,22 @@ function BlockView(props: BlockViewProps) {
     };
 
     const unselect = () => {
-        if (blockViewState !== BlockViewState.NoSelection && threeEnv) {
+        if (
+            blockViewState !== BlockViewState.NoSelection &&
+            blockViewState !== BlockViewState.HelpSelected &&
+            threeEnv
+        ) {
             const block = threeEnv.selectedBlock as any;
             block.material = CubeMaterial;
             (block.parent as Object3D).remove(block.userData.fullBlock);
             delete block.userData.fullBlock;
             threeEnv.selectedBlock = undefined;
-            setBlockViewState(BlockViewState.NoSelection);
         }
+        setBlockViewState(BlockViewState.NoSelection);
+    };
+
+    const showHelp = () => {
+        setBlockViewState(BlockViewState.HelpSelected);
     };
 
     const visibilityHandler = (isVisable: boolean) => {
@@ -257,6 +266,7 @@ function BlockView(props: BlockViewProps) {
                             minimize={minimize}
                             maximize={maximize}
                             unselect={unselect}
+                            showHelp={showHelp}
                         />
                     }
                 />

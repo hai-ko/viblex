@@ -5,7 +5,6 @@ import '../Block.css';
 interface BlockInfoBoxViewProps {
     block: ethers.providers.Block;
     minimize: () => void;
-    maximize: () => void;
     unselect: () => void;
 }
 
