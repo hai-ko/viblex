@@ -1,4 +1,4 @@
-import './InfoBox.css';
+import './Block.css';
 
 function MessageBoxView() {
     return (

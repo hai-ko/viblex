@@ -5,13 +5,14 @@ import detectEthereumProvider from '@metamask/detect-provider';
 import { ethers } from 'ethers';
 import { BLOCKS_TO_SHOW, createBlocks } from './utils/Block';
 import { onClick } from './utils/Intersection';
-import InfoBoxView from './InfoBoxView';
+import InfoBoxView from './info-box/InfoBoxView';
 import { CubeMaterial } from './utils/Materials';
 import { Object3D } from 'three';
 import PageVisibility from 'react-page-visibility';
 import { useLocation } from 'react-router-dom';
 import queryString from 'query-string';
 import MessageBoxView from './MessageBoxView';
+import './Block.css';
 
 interface BlockViewProps {
     view?: string;
