@@ -105,6 +105,7 @@ async function getBlocks(
 
 function BlockView(props: BlockViewProps) {
     const rpc = queryString.parse(useLocation().search).rpc as string;
+    const stats = queryString.parse(useLocation().search).stats as string;
 
     const [getBlocksTimeout, setGetBlocksTimeout] = useState<NodeJS.Timeout>();
     const threeContainer = useRef<HTMLDivElement>(null);
@@ -225,6 +226,7 @@ function BlockView(props: BlockViewProps) {
                 setThreeEnv,
 
                 threeContainer,
+                stats === 'true',
             );
         }
     }, [threeContainer, threeEnv]);

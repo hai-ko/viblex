@@ -413,14 +413,17 @@ function createCloud(
 export async function init(
     setThreeEnv: React.Dispatch<React.SetStateAction<ThreeEnv | undefined>>,
     threeContainer: React.RefObject<HTMLDivElement>,
+    showStats: boolean,
 ) {
     const height = (threeContainer.current as any).clientHeight;
     const width = (threeContainer.current as any).clientWidth;
     const threeEnv = await createThree(height, width);
     (threeContainer.current as any).appendChild(threeEnv.renderer.domElement);
-    const stats: any = Stats() as any;
-    (threeContainer.current as any).appendChild(stats.dom);
-    threeEnv.stats = stats;
+    if (showStats) {
+        const stats: any = Stats() as any;
+        (threeContainer.current as any).appendChild(stats.dom);
+        threeEnv.stats = stats;
+    }
 
     window.addEventListener(
         'resize',
