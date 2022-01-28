@@ -5,6 +5,8 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
 import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 // @ts-ignore
 import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
@@ -34,7 +36,7 @@ export interface ThreeEnv {
                   THREE.Material | THREE.Material[]
               >
             | undefined;
-        textGeometry: THREE.TextGeometry;
+        textGeometry: TextGeometry;
     }[];
 }
 
@@ -73,7 +75,7 @@ interface CloudData {
 }
 
 export function loadFont(path: string): Promise<THREE.Font> {
-    const loader = new THREE.FontLoader();
+    const loader = new FontLoader();
     return new Promise((resolve, reject) => {
         loader.load(path, function (response) {
             resolve(response);
@@ -195,9 +197,11 @@ function animateCloud(nodeData: CloudData) {
         // get the particle
         const particleData = nodeData.particlesData[i];
 
-        nodeData.nodesParticlePositions[i * 3] += particleData.velocity.x;
-        nodeData.nodesParticlePositions[i * 3 + 1] += particleData.velocity.y;
-        nodeData.nodesParticlePositions[i * 3 + 2] += particleData.velocity.z;
+        nodeData.nodesParticlePositions[i * 3] += particleData.velocity.x * 0.5;
+        nodeData.nodesParticlePositions[i * 3 + 1] +=
+            particleData.velocity.y * 0.5;
+        nodeData.nodesParticlePositions[i * 3 + 2] +=
+            particleData.velocity.z * 0.5;
 
         if (
             nodeData.nodesParticlePositions[i * 3 + 1] < -nodeData.rHalfY ||

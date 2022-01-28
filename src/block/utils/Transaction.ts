@@ -12,13 +12,14 @@ import {
 } from './Materials';
 import { scaleTo } from './Shared';
 import { ThreeEnv } from './ThreeEnv';
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 
 function createText(
     text: string,
     font: THREE.Font,
     material: THREE.MeshBasicMaterial,
 ): { mesh: THREE.Mesh; size: THREE.Vector3 } {
-    const textGeo = new THREE.TextGeometry(text, {
+    const textGeo = new TextGeometry(text, {
         font,
         height: 2,
         size: 25,

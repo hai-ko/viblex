@@ -3,7 +3,11 @@ import * as THREE from 'three';
 import { Vector3 } from 'three';
 // @ts-ignore
 import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
-import { TxPlaneMaterial, TxValueMaterial } from './Materials';
+import {
+    TxDataPlaneMaterial,
+    TxPlaneMaterial,
+    TxValueMaterial,
+} from './Materials';
 import { ThreeEnv } from './ThreeEnv';
 
 export async function moveMesh(
@@ -95,7 +99,7 @@ async function createTxPlane(
     const maxGasLimit = Math.max(...txGasLimit);
 
     const dataSize = blockWithTransactions.transactions.map((tx) =>
-        tx.data.length > 2 ? tx.data.length - 2 : 0,
+        tx.data?.length > 2 ? tx.data.length - 2 : 0,
     );
     const maxDataSize = Math.max(...dataSize);
 
@@ -116,7 +120,7 @@ async function createTxPlane(
 
         const plane = new THREE.Mesh(
             threeEnv.geometries.TxPlane,
-            TxPlaneMaterial,
+            tx.data.length > 2 ? TxDataPlaneMaterial : TxPlaneMaterial,
         );
         plane.userData.transaction = tx;
         plane.position.setX(startX + distance * i);

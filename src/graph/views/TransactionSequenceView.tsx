@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import * as Trace from './TestTrace.json';
+import Trace from './TestTrace.json';
 import {
     getAllAcccountAddresses,
     ReplayTransaction,
