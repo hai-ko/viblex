@@ -6,6 +6,8 @@ import { ThreeEnv } from './ThreeEnv';
 import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
 import { FrameMaterial, TextMaterial } from './Materials';
 import { CUBE_LENGTH, FRAME_THICKNESS } from './Geometries';
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
+
 import { scaleTo } from './Shared';
 
 const CHAIN_START_X_SHIFT = -800;
@@ -210,7 +212,7 @@ function createBlock(
         new THREE.Vector3(CUBE_LENGTH, CUBE_LENGTH, CUBE_LENGTH),
     );
 
-    const textGeometry = new THREE.TextGeometry(`#${block.number}`, {
+    const textGeometry = new TextGeometry(`#${block.number}`, {
         font,
         height: 2,
         size: fontSize,
