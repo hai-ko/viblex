@@ -7,7 +7,7 @@ import { BLOCKS_TO_SHOW, createBlocks } from './utils/Block';
 import { onClick } from './utils/Intersection';
 import InfoBoxView from './info-box/InfoBoxView';
 import { CubeMaterial } from './utils/Materials';
-import { Object3D } from 'three';
+import { Object3D, Vector3 } from 'three';
 import PageVisibility from 'react-page-visibility';
 import { useLocation } from 'react-router-dom';
 import queryString from 'query-string';
@@ -36,12 +36,15 @@ async function createConnection(
     >,
     setBlockViewState: React.Dispatch<React.SetStateAction<BlockViewState>>,
     rpc: string,
+    showHelp: boolean,
 ) {
     if (rpc) {
         setProvider(
             new ethers.providers.JsonRpcProvider(decodeURIComponent(rpc)),
         );
-        setBlockViewState(BlockViewState.HelpSelected);
+        setBlockViewState(
+            showHelp ? BlockViewState.HelpSelected : BlockViewState.NoSelection,
+        );
     } else {
         const provider = await detectEthereumProvider();
 
@@ -50,7 +53,11 @@ async function createConnection(
                 provider as any,
             );
             setProvider(ethersProvider);
-            setBlockViewState(BlockViewState.HelpSelected);
+            setBlockViewState(
+                showHelp
+                    ? BlockViewState.HelpSelected
+                    : BlockViewState.NoSelection,
+            );
         } else {
             setBlockViewState(BlockViewState.NoConnection);
         }
@@ -196,9 +203,15 @@ function BlockView(props: BlockViewProps) {
     };
 
     useEffect(() => {
-        if (!ethProvider) {
-            createConnection(setEthProvider, setBlockViewState, rpc);
-        } else if (threeEnv && blocks.length === 0) {
+        if (!ethProvider && threeContainer) {
+            const width = (threeContainer.current as any).clientWidth;
+            createConnection(
+                setEthProvider,
+                setBlockViewState,
+                rpc,
+                width > 1000,
+            );
+        } else if (ethProvider && threeEnv && blocks.length === 0) {
             getBlocks(
                 threeEnv,
                 ethProvider,
@@ -212,13 +225,20 @@ function BlockView(props: BlockViewProps) {
                 clearTimeout(getBlocksTimeout);
             }
         };
-    }, [ethProvider, threeEnv]);
+    }, [ethProvider, threeEnv, threeContainer]);
 
     useEffect(() => {
         if (blocks.length > 0 && threeEnv) {
             createBlocks(threeEnv, blocks);
         }
     }, [blocks, threeEnv]);
+
+    useEffect(() => {
+        if (threeEnv && blockViewState === BlockViewState.NoConnection) {
+            threeEnv.controls.target = new Vector3(0, 0, 0);
+            threeEnv.controls.update();
+        }
+    }, [blockViewState]);
 
     useEffect(() => {
         if (threeContainer && !threeEnv) {

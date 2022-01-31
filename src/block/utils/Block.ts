@@ -197,7 +197,7 @@ function createBlock(
     showLink: boolean,
     cubeMaterial: THREE.MeshBasicMaterial,
     linkMaterial: THREE.MeshBasicMaterial,
-    font: THREE.Font,
+    font: any,
 ): number {
     const fontSize = 20;
     const scale = (300 + flexSize) / CUBE_LENGTH;

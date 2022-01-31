@@ -16,7 +16,7 @@ import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 
 function createText(
     text: string,
-    font: THREE.Font,
+    font: any,
     material: THREE.MeshBasicMaterial,
 ): { mesh: THREE.Mesh; size: THREE.Vector3 } {
     const textGeo = new TextGeometry(text, {
@@ -33,7 +33,7 @@ function createText(
 }
 
 export function createTransactionMesh(
-    font: THREE.Font,
+    font: any,
     parent: THREE.Object3D<THREE.Event>,
     tx: ethers.providers.TransactionResponse,
     threeEnv: ThreeEnv,

@@ -14,7 +14,7 @@ interface MenuProps {
 
 function Menu(props: MenuProps) {
     return (
-        <div className="menu d-flex justify-content-start w-100">
+        <div className="menu d-flex justify-content-start">
             <div className=" d-flex align-items-end w-100">
                 {props.defaultView && props.setView && (
                     <ViewSelect

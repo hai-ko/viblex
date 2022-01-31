@@ -24,7 +24,7 @@ export interface ThreeEnv {
     cloudGroups: THREE.Group[];
     selectedBlock?: THREE.Object3D;
     selectedTransaction?: THREE.Object3D;
-    fonts: THREE.Font[];
+    fonts: any[];
     composer: EffectComposer;
     geometries: GeometriesRecords;
     stats?: Stats;
@@ -74,7 +74,7 @@ interface CloudData {
     settings: CloudSettings;
 }
 
-export function loadFont(path: string): Promise<THREE.Font> {
+export function loadFont(path: string): Promise<any> {
     const loader = new FontLoader();
     return new Promise((resolve, reject) => {
         loader.load(path, function (response) {
@@ -85,9 +85,9 @@ export function loadFont(path: string): Promise<THREE.Font> {
 
 async function createThree(width: number, height: number): Promise<ThreeEnv> {
     const camera = new THREE.PerspectiveCamera(45, width / height, 1, 1000000);
-    camera.position.z = 3000;
+    camera.position.z = 4000;
     camera.position.x = -3000;
-    camera.position.y = 1500;
+    camera.position.y = 2000;
 
     const scene = new THREE.Scene();
 
@@ -99,6 +99,8 @@ async function createThree(width: number, height: number): Promise<ThreeEnv> {
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.minDistance = 1000;
     controls.maxDistance = 7000;
+    controls.target = new THREE.Vector3(-1000, 0, 0);
+    controls.update();
 
     const ethNodesGroup = new THREE.Group();
     const blockchainGroup = new THREE.Group();
