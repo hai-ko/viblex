@@ -1,6 +1,10 @@
 import * as THREE from 'three';
 // @ts-ignore
 import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
+import { TextMaterial } from './Materials';
+// @ts-ignore
+import { Text } from 'troika-three-text';
 
 export function scaleTo(
     scale: THREE.Vector3,
@@ -11,6 +15,20 @@ export function scaleTo(
         .to(scale, time ? time : 2000)
 
         .start();
+}
+
+export function createText(text: string, font: any, fontSize: number) {
+    const textMesh = new Text();
+    textMesh.text = text;
+    textMesh.fontSize = fontSize;
+    textMesh.color = 0xffffff;
+    textMesh.material = TextMaterial;
+    textMesh.font = 'fnf.ttf';
+    textMesh.layers.enable(1);
+
+    textMesh.sync();
+
+    return textMesh;
 }
 
 export function createFrame(

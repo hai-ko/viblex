@@ -13,6 +13,7 @@ import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
 
 import * as THREE from 'three';
 import { Geometries, GeometriesRecords } from './Geometries';
+import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
 
 export interface ThreeEnv {
     camera: PerspectiveCamera;
@@ -107,6 +108,11 @@ async function createThree(width: number, height: number): Promise<ThreeEnv> {
     scene.add(ethNodesGroup);
     scene.add(blockchainGroup);
 
+    const grid = new THREE.GridHelper(100000, 100, 0x111111, 0x111111);
+
+    grid.position.set(-20000, -2000, 0);
+    scene.add(grid);
+
     const renderScene = new RenderPass(scene, camera);
 
     const effectFXAA = new ShaderPass(FXAAShader);
@@ -135,6 +141,11 @@ async function createThree(width: number, height: number): Promise<ThreeEnv> {
     composer.addPass(effectFXAA);
 
     //setInterval(() => console.log(renderer.info), 10000);
+    document.body.appendChild(VRButton.createButton(renderer));
+    renderer.xr.enabled = true;
+    renderer.setAnimationLoop(function () {
+        renderer.render(scene, camera);
+    });
 
     return {
         camera,

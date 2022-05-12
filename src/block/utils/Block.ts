@@ -4,11 +4,10 @@ import { Vector3 } from 'three';
 import { ThreeEnv } from './ThreeEnv';
 // @ts-ignore
 import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
-import { FrameMaterial, TextMaterial } from './Materials';
+import { FrameMaterial } from './Materials';
 import { CUBE_LENGTH, FRAME_THICKNESS } from './Geometries';
-import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 
-import { scaleTo } from './Shared';
+import { createText, scaleTo } from './Shared';
 
 const CHAIN_START_X_SHIFT = -800;
 const INITIAL_BLOCK_PART_SCALE = 0.1;
@@ -199,7 +198,7 @@ function createBlock(
     linkMaterial: THREE.MeshBasicMaterial,
     font: any,
 ): number {
-    const fontSize = 20;
+    const fontSize = 25;
     const scale = (300 + flexSize) / CUBE_LENGTH;
 
     const cube = new THREE.Mesh(threeEnv.geometries.Cube, cubeMaterial);
@@ -212,20 +211,17 @@ function createBlock(
         new THREE.Vector3(CUBE_LENGTH, CUBE_LENGTH, CUBE_LENGTH),
     );
 
-    const textGeometry = new TextGeometry(`#${block.number}`, {
-        font,
-        height: 2,
-        size: fontSize,
-    });
-
-    const textMesh1 = new THREE.Mesh(textGeometry, TextMaterial);
-    textMesh1.geometry.computeBoundingBox();
+    const textMesh1 = createText(`#${block.number}`, font, fontSize);
     const textMeshSize = new THREE.Vector3();
+    textMesh1.geometry.computeBoundingBox();
     textMesh1.geometry.boundingBox?.getSize(textMeshSize);
+
+    const textLength = 127;
+
     textMesh1.position.set(
-        0 - textMeshSize.length() / 2,
-        -(fontSize / 2),
-        CUBE_LENGTH / 2,
+        0 - textLength / 2,
+        fontSize / 2,
+        CUBE_LENGTH / 2 + 1,
     );
     blockGroup.add(textMesh1);
 
@@ -267,7 +263,7 @@ function createBlock(
     threeEnv.blockObjects[block.number] = {
         block: blockGroup,
         link,
-        textGeometry,
+        textGeometry: textMesh1.geometry,
     };
 
     return nextStartX;
